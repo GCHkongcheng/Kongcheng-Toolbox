@@ -1,0 +1,15 @@
+services:
+  nextjs-app:
+    build: .
+    container_name: dev-toolbox
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    tty: true # <--- 添加这一行
+    stdin_open: true # <--- 添加这一行
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+
