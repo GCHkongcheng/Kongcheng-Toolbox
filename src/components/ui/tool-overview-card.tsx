@@ -13,45 +13,53 @@ export function ToolOverviewCard({
   tool,
   compact = false,
 }: ToolOverviewCardProps) {
+  const href = tool.path ?? `/tools/${tool.category}`;
+
   return (
-    <section
-      className={cn(
-        "rounded-xl border border-border bg-card",
-        compact ? "p-4" : "p-5",
-      )}
+    <Link
+      href={href}
+      className="group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className={cn("font-semibold", compact ? "text-sm" : "text-base")}>
-          {tool.name}
-        </h3>
-        <StatusBadge status={tool.status} />
-      </div>
-
-      <p
+      <section
         className={cn(
-          "mt-2 text-muted-foreground",
-          compact ? "text-xs" : "text-sm",
+          "rounded-xl border border-border bg-card transition-shadow duration-200 hover:shadow-md dark:hover:shadow-black/40",
+          compact ? "p-4" : "p-5",
         )}
       >
-        {tool.summary}
-      </p>
+        <div className="flex items-start justify-between gap-3">
+          <h3
+            className={cn("font-semibold", compact ? "text-sm" : "text-base")}
+          >
+            {tool.name}
+          </h3>
+          <StatusBadge status={tool.status} />
+        </div>
 
-      <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-        <Wrench size={13} className="text-primary" />
-        <span>
-          所属模块：{moduleMetas.find((m) => m.id === tool.category)?.title}
-        </span>
-      </div>
+        <p
+          className={cn(
+            "mt-2 text-muted-foreground",
+            compact ? "text-xs" : "text-sm",
+          )}
+        >
+          {tool.summary}
+        </p>
 
-      <Link
-        href={tool.path ?? `/tools/${tool.category}`}
-        className={cn(
-          "mt-4 inline-flex items-center gap-1 font-medium text-primary hover:underline",
-          compact ? "text-xs" : "text-sm",
-        )}
-      >
-        进入工具 <ArrowRight size={14} />
-      </Link>
-    </section>
+        <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+          <Wrench size={13} className="text-primary" />
+          <span>
+            所属模块：{moduleMetas.find((m) => m.id === tool.category)?.title}
+          </span>
+        </div>
+
+        <div
+          className={cn(
+            "mt-4 inline-flex items-center gap-1 font-medium text-primary group-hover:underline",
+            compact ? "text-xs" : "text-sm",
+          )}
+        >
+          进入工具 <ArrowRight size={14} />
+        </div>
+      </section>
+    </Link>
   );
 }

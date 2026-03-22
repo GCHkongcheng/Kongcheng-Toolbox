@@ -1,0 +1,122 @@
+[
+  {
+    "id": "dev",
+    "title": "开发工具",
+    "description": "开发文档、代码托管与调试相关站点。",
+    "links": [
+      {
+        "id": "github",
+        "name": "GitHub",
+        "href": "https://github.com",
+        "summary": "代码托管、协作与开源项目生态。",
+        "tags": ["代码托管", "协作"],
+        "status": "推荐",
+        "featured": true,
+        "weight": 100,
+        "updatedAt": "2026-03-22"
+      },
+      {
+        "id": "mdn",
+        "name": "MDN Web Docs",
+        "href": "https://developer.mozilla.org",
+        "summary": "前端标准文档与 API 参考。",
+        "tags": ["文档", "前端"],
+        "status": "常用",
+        "featured": true,
+        "weight": 90,
+        "updatedAt": "2026-03-20"
+      },
+      {
+        "id": "vercel",
+        "name": "Vercel",
+        "href": "https://vercel.com",
+        "summary": "前端项目部署与运行平台。",
+        "tags": ["部署", "Next.js"],
+        "status": "收录中",
+        "featured": false,
+        "weight": 75,
+        "updatedAt": "2026-03-19"
+      }
+    ]
+  },
+  {
+    "id": "design",
+    "title": "设计与资源",
+    "description": "界面灵感、图标与配色资源集合。",
+    "links": [
+      {
+        "id": "dribbble",
+        "name": "Dribbble",
+        "href": "https://dribbble.com",
+        "summary": "UI/UX 视觉灵感与案例浏览。",
+        "tags": ["灵感", "UI"],
+        "status": "常用",
+        "featured": false,
+        "weight": 80,
+        "updatedAt": "2026-03-15"
+      },
+      {
+        "id": "figma-community",
+        "name": "Figma Community",
+        "href": "https://www.figma.com/community",
+        "summary": "可复用设计文件、组件与模板。",
+        "tags": ["组件", "模板"],
+        "status": "推荐",
+        "featured": true,
+        "weight": 95,
+        "updatedAt": "2026-03-21"
+      },
+      {
+        "id": "iconify",
+        "name": "Iconify",
+        "href": "https://icon-sets.iconify.design",
+        "summary": "图标库聚合检索与使用。",
+        "tags": ["图标", "资源"],
+        "status": "收录中",
+        "featured": false,
+        "weight": 70,
+        "updatedAt": "2026-03-18"
+      }
+    ]
+  },
+  {
+    "id": "ai",
+    "title": "AI 与效率",
+    "description": "AI 产品、提示词与效率工具导航。",
+    "links": [
+      {
+        "id": "openai",
+        "name": "OpenAI",
+        "href": "https://openai.com",
+        "summary": "模型能力、平台与更新动态。",
+        "tags": ["模型", "平台"],
+        "status": "推荐",
+        "featured": true,
+        "weight": 98,
+        "updatedAt": "2026-03-22"
+      },
+      {
+        "id": "huggingface",
+        "name": "Hugging Face",
+        "href": "https://huggingface.co",
+        "summary": "模型仓库、数据集与社区生态。",
+        "tags": ["模型", "社区"],
+        "status": "常用",
+        "featured": false,
+        "weight": 88,
+        "updatedAt": "2026-03-20"
+      },
+      {
+        "id": "prompting-guide",
+        "name": "Prompt Engineering Guide",
+        "href": "https://www.promptingguide.ai",
+        "summary": "提示词工程实践参考。",
+        "tags": ["Prompt", "教程"],
+        "status": "收录中",
+        "featured": false,
+        "weight": 76,
+        "updatedAt": "2026-03-17"
+      }
+    ]
+  }
+]

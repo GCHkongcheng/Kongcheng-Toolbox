@@ -24,6 +24,9 @@ export function ToolsTopNav({ backHref, backLabel }: ToolsTopNavProps) {
         <Link href="/tools" className="hover:text-foreground">
           模块总览
         </Link>
+        <Link href="/?view=sites-center" className="hover:text-foreground">
+          网址导航
+        </Link>
         <a
           href="https://blog.gchkc.top"
           className="hover:text-foreground"

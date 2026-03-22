@@ -20,6 +20,9 @@ export default function ToolsOverviewPage() {
             <Link href="/" className="hover:text-foreground">
               首页
             </Link>
+            <Link href="/?view=sites-center" className="hover:text-foreground">
+              网址导航
+            </Link>
             <a
               href="https://blog.gchkc.top"
               className="hover:text-foreground"

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +10,14 @@ import {
   type ModuleId,
   type PromptTemplate,
 } from "@/lib/tool-modules";
+import {
+  siteLinkGroups,
+  type SiteLinkGroup,
+  type SiteLinkItem,
+} from "../lib/site-links";
 import { ToolOverviewCard } from "@/components/ui/tool-overview-card";
+import { SiteLinkCard } from "@/components/ui/site-link-card";
+import { SidebarWidgets } from "@/components/ui/sidebar-widgets";
 import {
   Search,
   Menu,
@@ -27,7 +34,45 @@ import {
   Tag,
   Sun,
   Moon,
+  Compass,
 } from "lucide-react";
+
+const FAVORITE_STORAGE_KEY = "gchkongcheng.site-favorites";
+
+type SiteViewId = "sites-center" | "sites-favorites";
+type ViewId = "all" | ModuleId | SiteViewId;
+type SearchEngine = "google" | "github" | "npm" | "dev-search";
+
+const searchEngineOptions: Array<{
+  id: SearchEngine;
+  label: string;
+  buildUrl: (keyword: string) => string;
+}> = [
+  {
+    id: "google",
+    label: "Google",
+    buildUrl: (keyword) =>
+      `https://www.google.com/search?q=${encodeURIComponent(keyword)}`,
+  },
+  {
+    id: "github",
+    label: "GitHub",
+    buildUrl: (keyword) =>
+      `https://github.com/search?q=${encodeURIComponent(keyword)}`,
+  },
+  {
+    id: "npm",
+    label: "NPM",
+    buildUrl: (keyword) =>
+      `https://www.npmjs.com/search?q=${encodeURIComponent(keyword)}`,
+  },
+  {
+    id: "dev-search",
+    label: "开发者搜索",
+    buildUrl: (keyword) =>
+      `https://devv.ai/search?lang=zh&q=${encodeURIComponent(keyword)}`,
+  },
+];
 
 interface Category {
   id: "all" | ModuleId;
@@ -161,9 +206,64 @@ function TemplateCard({
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState<ViewId>(() => {
+    if (typeof window === "undefined") {
+      return "all";
+    }
+
+    const view = new URLSearchParams(window.location.search).get("view");
+    if (view === "sites-center" || view === "sites-favorites") {
+      return view;
+    }
+
+    return "all";
+  });
   const [searchQuery, setSearchQuery] = useState("");
+  const [aggregateQuery, setAggregateQuery] = useState("");
+  const [searchEngine, setSearchEngine] = useState<SearchEngine>("google");
   const [darkMode, setDarkMode] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    try {
+      const saved = localStorage.getItem(FAVORITE_STORAGE_KEY);
+      if (!saved) {
+        return [];
+      }
+
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed.filter((id): id is string => typeof id === "string");
+    } catch {
+      return [];
+    }
+  });
+
+  const isSitesCenterView = activeCategory === "sites-center";
+  const isSitesFavoritesView = activeCategory === "sites-favorites";
+  const isSitesView = isSitesCenterView || isSitesFavoritesView;
+
+  const totalSiteCount = useMemo(
+    () =>
+      siteLinkGroups.reduce(
+        (total: number, group: SiteLinkGroup) => total + group.links.length,
+        0,
+      ),
+    [],
+  );
+
+  const isModuleCategory = (value: ViewId): value is ModuleId => {
+    return moduleMetas.some((module) => module.id === value);
+  };
+
+  useEffect(() => {
+    localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
 
   const toggleDark = () => {
     const next = !darkMode;
@@ -187,13 +287,58 @@ export default function Home() {
 
   const filteredTools = toolDemos.filter((tool) => {
     const matchCategory =
-      activeCategory === "all" || tool.category === activeCategory;
+      activeCategory === "all" ||
+      (isModuleCategory(activeCategory) && tool.category === activeCategory);
     const matchSearch =
       searchQuery === "" ||
       tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tool.summary.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
+
+  const filteredSiteGroups = useMemo(() => {
+    const keyword = searchQuery.trim().toLowerCase();
+
+    return siteLinkGroups
+      .map((group: SiteLinkGroup) => {
+        const links = group.links.filter((link: SiteLinkItem) => {
+          if (keyword.length === 0) {
+            return true;
+          }
+
+          return (
+            link.name.toLowerCase().includes(keyword) ||
+            link.summary.toLowerCase().includes(keyword) ||
+            link.tags.some((tag: string) => tag.toLowerCase().includes(keyword))
+          );
+        });
+
+        return {
+          ...group,
+          links,
+        };
+      })
+      .filter((group: SiteLinkGroup) => group.links.length > 0);
+  }, [searchQuery]);
+
+  const filteredSiteCount = useMemo(() => {
+    return filteredSiteGroups.reduce(
+      (total: number, group: SiteLinkGroup) => total + group.links.length,
+      0,
+    );
+  }, [filteredSiteGroups]);
+
+  const favoriteSiteLinks = useMemo(() => {
+    const linkMap = new Map(
+      filteredSiteGroups
+        .flatMap((group: SiteLinkGroup) => group.links)
+        .map((link: SiteLinkItem) => [link.id, link]),
+    );
+
+    return favoriteIds
+      .map((id) => linkMap.get(id))
+      .filter((link): link is SiteLinkItem => Boolean(link));
+  }, [favoriteIds, filteredSiteGroups]);
 
   const isPromptView = activeCategory === "prompt";
   const isAllView = activeCategory === "all";
@@ -202,6 +347,47 @@ export default function Home() {
     const tpl = promptTemplates.find((t) => t.id === id);
     if (tpl) navigator.clipboard.writeText(tpl.description).catch(() => {});
   };
+
+  const toggleSiteFavorite = (id: string) => {
+    setFavoriteIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      }
+
+      return [...prev, id];
+    });
+  };
+
+  const handleAggregateSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const keyword = aggregateQuery.trim();
+    if (!keyword) {
+      return;
+    }
+
+    const engine = searchEngineOptions.find((item) => item.id === searchEngine);
+    if (!engine) {
+      return;
+    }
+
+    window.open(engine.buildUrl(keyword), "_blank", "noopener,noreferrer");
+  };
+
+  const headerTitle = isSitesCenterView
+    ? "网址导航中心"
+    : isSitesFavoritesView
+      ? "我的收藏"
+      : (categories.find((c) => c.id === activeCategory)?.label ?? "全部工具");
+
+  const headerSubtitle = isSitesCenterView
+    ? "当前功能: 网址导航聚合"
+    : isSitesFavoritesView
+      ? "当前功能: 我的网址收藏"
+      : isPromptView
+        ? "当前功能: Prompt 模板管理器 Demo"
+        : isAllView
+          ? "当前功能: 工具总览"
+          : "当前功能: 模块占位 Demo";
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
@@ -243,7 +429,11 @@ export default function Home() {
             />
             <input
               type="text"
-              placeholder="搜索工具或模板..."
+              placeholder={
+                isSitesView
+                  ? "搜索网址名称、描述或标签..."
+                  : "搜索工具或模板..."
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
@@ -289,9 +479,71 @@ export default function Home() {
               </li>
             ))}
           </ul>
+
+          <p className="mb-1.5 mt-5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            网址导航
+          </p>
+          <ul className="space-y-0.5">
+            <li>
+              <button
+                onClick={() => {
+                  setActiveCategory("sites-center");
+                  setSidebarOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                  activeCategory === "sites-center"
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                <Compass size={16} className="shrink-0" />
+                <span className="flex-1 text-left">网址导航中心</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 text-[10px] tabular-nums",
+                    activeCategory === "sites-center"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {totalSiteCount}
+                </span>
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  setActiveCategory("sites-favorites");
+                  setSidebarOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                  activeCategory === "sites-favorites"
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                )}
+              >
+                <Star size={16} className="shrink-0" />
+                <span className="flex-1 text-left">我的收藏</span>
+                <span
+                  className={cn(
+                    "rounded-full px-1.5 py-0.5 text-[10px] tabular-nums",
+                    activeCategory === "sites-favorites"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {favoriteIds.length}
+                </span>
+              </button>
+            </li>
+          </ul>
         </nav>
 
-        <div className="border-t border-border px-4 py-3">
+        <div className="border-t border-border px-4 py-3 space-y-3">
+          <SidebarWidgets />
+
           <button
             onClick={toggleDark}
             className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
@@ -313,17 +565,8 @@ export default function Home() {
           </button>
 
           <div className="flex-1">
-            <h1 className="text-sm font-semibold">
-              {categories.find((c) => c.id === activeCategory)?.label ??
-                "全部工具"}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {isPromptView
-                ? "当前功能: Prompt 模板管理器 Demo"
-                : isAllView
-                  ? "当前功能: 工具总览"
-                  : "当前功能: 模块占位 Demo"}
-            </p>
+            <h1 className="text-sm font-semibold">{headerTitle}</h1>
+            <p className="text-xs text-muted-foreground">{headerSubtitle}</p>
           </div>
 
           <div className="relative hidden md:block">
@@ -333,7 +576,11 @@ export default function Home() {
             />
             <input
               type="text"
-              placeholder="搜索工具或模板..."
+              placeholder={
+                isSitesView
+                  ? "搜索网址名称、描述或标签..."
+                  : "搜索工具或模板..."
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
@@ -358,6 +605,12 @@ export default function Home() {
             >
               模块总览
             </Link>
+            <button
+              onClick={() => setActiveCategory("sites-center")}
+              className="inline-flex rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              网址导航
+            </button>
             <a
               href="https://blog.gchkc.top"
               className="inline-flex rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -377,10 +630,119 @@ export default function Home() {
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <div className="mb-4 rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground">
-            空城工具箱是多工具聚合平台，支持按模块浏览与逐步扩展。
+            {isSitesView
+              ? "网址导航支持在当前页浏览和收藏，无需离开首页视图。"
+              : "空城工具箱是多工具聚合平台，支持按模块浏览与逐步扩展。"}
           </div>
 
-          {isPromptView && filteredTools.length > 0 && (
+          {isSitesCenterView && (
+            <form
+              onSubmit={handleAggregateSearch}
+              className="mb-4 rounded-lg border border-border bg-card p-2"
+            >
+              <div className="flex items-center gap-2">
+                <select
+                  value={searchEngine}
+                  onChange={(e) =>
+                    setSearchEngine(e.target.value as SearchEngine)
+                  }
+                  className="rounded-md border border-input bg-background px-2.5 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  aria-label="聚合搜索引擎"
+                >
+                  {searchEngineOptions.map((engine) => (
+                    <option key={engine.id} value={engine.id}>
+                      {engine.label}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  value={aggregateQuery}
+                  onChange={(e) => setAggregateQuery(e.target.value)}
+                  placeholder="输入关键词并回车，按所选引擎搜索..."
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </form>
+          )}
+
+          {isSitesCenterView &&
+            (filteredSiteCount === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                <Search size={36} className="mb-4 opacity-30" />
+                <p className="text-sm font-medium">未找到匹配的网址</p>
+                <p className="mt-1 text-xs">尝试更换关键词继续检索</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {filteredSiteGroups.map((group: SiteLinkGroup) => (
+                  <section
+                    key={group.id}
+                    className="rounded-xl border border-border bg-card p-4 lg:p-5"
+                  >
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-lg font-semibold tracking-tight">
+                          {group.title}
+                        </h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {group.description}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground">
+                        {group.links.length}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {group.links.map((link) => (
+                        <SiteLinkCard
+                          key={link.id}
+                          link={link}
+                          isFavorite={favoriteIds.includes(link.id)}
+                          onToggleFavorite={toggleSiteFavorite}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ))}
+
+          {isSitesFavoritesView &&
+            (favoriteSiteLinks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                <Star size={36} className="mb-4 opacity-30" />
+                <p className="text-sm font-medium">还没有收藏的网址</p>
+                <p className="mt-1 text-xs">
+                  在网址导航中心点击星标即可加入收藏
+                </p>
+              </div>
+            ) : (
+              <section className="rounded-xl border border-border bg-card p-4 lg:p-5">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold tracking-tight">
+                    我的收藏
+                  </h2>
+                  <span className="rounded-full bg-secondary px-2 py-1 text-xs text-secondary-foreground">
+                    {favoriteSiteLinks.length}
+                  </span>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {favoriteSiteLinks.map((link) => (
+                    <SiteLinkCard
+                      key={link.id}
+                      link={link}
+                      isFavorite={favoriteIds.includes(link.id)}
+                      onToggleFavorite={toggleSiteFavorite}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+
+          {!isSitesView && isPromptView && filteredTools.length > 0 && (
             <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filteredTools.map((tool) => (
                 <ToolOverviewCard key={tool.id} tool={tool} compact />
@@ -388,7 +750,7 @@ export default function Home() {
             </div>
           )}
 
-          {isPromptView ? (
+          {!isSitesView && isPromptView ? (
             filteredTemplates.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
                 <Search size={36} className="mb-4 opacity-30" />
@@ -406,19 +768,19 @@ export default function Home() {
                 ))}
               </div>
             )
-          ) : filteredTools.length === 0 ? (
+          ) : !isSitesView && filteredTools.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
               <Search size={36} className="mb-4 opacity-30" />
               <p className="text-sm font-medium">未找到匹配的工具</p>
               <p className="mt-1 text-xs">尝试更换关键词或分类</p>
             </div>
-          ) : (
+          ) : !isSitesView ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filteredTools.map((tool) => (
                 <ToolOverviewCard key={tool.id} tool={tool} compact />
               ))}
             </div>
-          )}
+          ) : null}
         </main>
       </div>
     </div>
