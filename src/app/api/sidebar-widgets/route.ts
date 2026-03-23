@@ -30,7 +30,7 @@ export async function GET() {
   const now = new Date();
 
   const weatherPromise = fetch(
-    "https://api.open-meteo.com/v1/forecast?latitude=39.9042&longitude=116.4074&current=temperature_2m,weather_code&timezone=Asia%2FShanghai",
+    "https://api.open-meteo.com/v1/forecast?latitude=31.4912&longitude=120.3119&current=temperature_2m,weather_code&timezone=Asia%2FShanghai",
     { next: { revalidate: 300 } },
   ).then((res) => res.json());
 
@@ -61,7 +61,7 @@ export async function GET() {
   const weatherData =
     weatherResult.status === "fulfilled" && weatherResult.value?.current
       ? {
-          city: "北京",
+          city: "无锡",
           temperatureC: Number(weatherResult.value.current.temperature_2m),
           description: mapWeatherCode(
             Number(weatherResult.value.current.weather_code),
@@ -88,8 +88,8 @@ export async function GET() {
     goldResult.status === "fulfilled" &&
     typeof goldResult.value?.price === "number"
       ? {
-          xauUsd: Number(goldResult.value.price),
-          unit: "oz",
+          xauUsd: Number(goldResult.value.price) / 31.1034768,
+          unit: "g",
         }
       : null;
 
