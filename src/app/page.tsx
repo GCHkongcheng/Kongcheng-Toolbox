@@ -3,13 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import {
-  moduleMetas,
-  promptTemplates,
-  toolDemos,
-  type ModuleId,
-  type PromptTemplate,
-} from "@/lib/tool-modules";
+import { moduleMetas, toolDemos, type ModuleId } from "@/lib/tool-modules";
 import {
   siteLinkGroups,
   type SiteLinkGroup,
@@ -28,10 +22,7 @@ import {
   PenTool,
   BookOpen,
   LayoutTemplate,
-  ChevronRight,
-  Copy,
   Star,
-  Tag,
   Sun,
   Moon,
   Compass,
@@ -100,109 +91,9 @@ const categories: Category[] = [
     id: module.id,
     label: module.title,
     icon: moduleIcons[module.id],
-    count:
-      module.id === "prompt"
-        ? promptTemplates.length
-        : toolDemos.filter((tool) => tool.category === module.id).length,
+    count: toolDemos.filter((tool) => tool.category === module.id).length,
   })),
 ];
-
-function Badge({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
-        "bg-secondary text-secondary-foreground",
-        className,
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-function TemplateCard({
-  template,
-  onCopy,
-}: {
-  template: PromptTemplate;
-  onCopy: (id: number) => void;
-}) {
-  const [copied, setCopied] = useState(false);
-  const [starred, setStarred] = useState(template.starred);
-
-  const handleCopy = () => {
-    onCopy(template.id);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  return (
-    <div
-      className={cn(
-        "rounded-lg border border-border bg-card p-5",
-        "transition-shadow duration-200 hover:shadow-md dark:hover:shadow-black/40",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-sm font-semibold text-card-foreground leading-snug">
-          {template.title}
-        </h3>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => setStarred(!starred)}
-            className={cn(
-              "rounded-md p-1.5 transition-colors",
-              starred
-                ? "text-amber-400 hover:text-amber-500"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-            aria-label={starred ? "取消收藏" : "收藏"}
-          >
-            <Star size={15} fill={starred ? "currentColor" : "none"} />
-          </button>
-          <button
-            onClick={handleCopy}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
-            aria-label="复制模板"
-          >
-            {copied ? (
-              <span className="text-xs font-medium text-green-500">已复制</span>
-            ) : (
-              <Copy size={15} />
-            )}
-          </button>
-        </div>
-      </div>
-
-      <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-2">
-        {template.description}
-      </p>
-
-      <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-        {template.tags.map((tag) => (
-          <Badge key={tag}>
-            <Tag size={10} className="mr-1" />
-            {tag}
-          </Badge>
-        ))}
-      </div>
-
-      <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-        <span>使用 {template.usageCount} 次</span>
-        <button className="flex items-center gap-0.5 font-medium text-primary hover:underline">
-          使用此模板 <ChevronRight size={12} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -272,19 +163,6 @@ export default function Home() {
     localStorage.setItem("theme", next ? "dark" : "light");
   };
 
-  const filteredTemplates = promptTemplates.filter((t) => {
-    const matchCategory =
-      activeCategory === "all" || activeCategory === "prompt";
-    const matchSearch =
-      searchQuery === "" ||
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.tags.some((tag) =>
-        tag.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    return matchCategory && matchSearch;
-  });
-
   const filteredTools = toolDemos.filter((tool) => {
     const matchCategory =
       activeCategory === "all" ||
@@ -342,11 +220,6 @@ export default function Home() {
 
   const isPromptView = activeCategory === "prompt";
   const isAllView = activeCategory === "all";
-
-  const handleCopy = (id: number) => {
-    const tpl = promptTemplates.find((t) => t.id === id);
-    if (tpl) navigator.clipboard.writeText(tpl.description).catch(() => {});
-  };
 
   const toggleSiteFavorite = (id: string) => {
     setFavoriteIds((prev) => {
@@ -742,33 +615,7 @@ export default function Home() {
               </section>
             ))}
 
-          {!isSitesView && isPromptView && filteredTools.length > 0 && (
-            <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredTools.map((tool) => (
-                <ToolOverviewCard key={tool.id} tool={tool} compact />
-              ))}
-            </div>
-          )}
-
-          {!isSitesView && isPromptView ? (
-            filteredTemplates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-                <Search size={36} className="mb-4 opacity-30" />
-                <p className="text-sm font-medium">未找到匹配的模板</p>
-                <p className="mt-1 text-xs">尝试更换关键词或分类</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredTemplates.map((tpl) => (
-                  <TemplateCard
-                    key={tpl.id}
-                    template={tpl}
-                    onCopy={handleCopy}
-                  />
-                ))}
-              </div>
-            )
-          ) : !isSitesView && filteredTools.length === 0 ? (
+          {!isSitesView && filteredTools.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
               <Search size={36} className="mb-4 opacity-30" />
               <p className="text-sm font-medium">未找到匹配的工具</p>

@@ -15,6 +15,63 @@ export default async function ToolModulePage({
     notFound();
   }
 
+  if (module === "prompt") {
+    return (
+      <ToolPageShell
+        title={meta.title}
+        subtitle="已接入独立站点，支持在当前页面直接访问。"
+        status={meta.status}
+        maxWidthClassName="max-w-6xl"
+      >
+        <section className="rounded-xl border border-border bg-card p-4 lg:p-5">
+          <h2 className="text-sm font-semibold text-foreground">模块功能</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg border border-border bg-background p-3">
+              <p className="text-sm font-medium">Prompt 模板管理器</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                已上线，支持模板检索、标签筛选和快速复用。
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-background p-3">
+              <p className="text-sm font-medium">变量模板工坊</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                开发中，用于变量占位与批量生成场景。
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-background p-3">
+              <p className="text-sm font-medium">团队模板库</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                规划中，支持团队共享、审核与版本管理。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-xl border border-border bg-card p-3 lg:p-4">
+          <div className="mb-3 text-xs text-muted-foreground">
+            若内嵌失败，可直接访问：
+            <a
+              href="https://prompt.283947.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-1 font-medium text-primary hover:underline"
+            >
+              prompt.283947.xyz
+            </a>
+          </div>
+
+          <iframe
+            title="Prompt 模板管理器"
+            src="https://prompt.283947.xyz"
+            className="h-[78vh] w-full rounded-lg border border-border bg-background"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </section>
+      </ToolPageShell>
+    );
+  }
+
   return (
     <ToolPageShell
       title={meta.title}

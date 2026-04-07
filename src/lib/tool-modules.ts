@@ -32,8 +32,8 @@ export interface ToolDemo {
 export const moduleMetas: ModuleMeta[] = [
   {
     id: "prompt",
-    title: "Prompt 模板管理器",
-    subtitle: "管理、检索和复用高质量 Prompt 模板。",
+    title: "模板管理器",
+    subtitle: "统一管理 Prompt、变量模板与团队模板资产。",
     status: "已上线",
     features: [
       "模板分类与标签检索",
