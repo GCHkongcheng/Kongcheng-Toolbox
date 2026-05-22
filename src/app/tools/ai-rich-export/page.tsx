@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toBlob } from "html-to-image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -57,6 +57,12 @@ const exportOptions = [
     icon: FileText,
   },
   {
+    id: "pdf",
+    label: "PDF 文档",
+    hint: "导出为 .pdf，适合打印、分享和固定版式",
+    icon: FileText,
+  },
+  {
     id: "png",
     label: "PNG 图片",
     hint: "清晰无损，长内容会自动分页",
@@ -71,10 +77,22 @@ const exportOptions = [
 ] as const;
 
 type ExportOption = (typeof exportOptions)[number]["id"];
+type DraftPayload = {
+  content: string;
+  selectedFormat: ExportOption;
+  updatedAt: string;
+};
+
+const DRAFT_STORAGE_KEY = "ai-rich-export:draft:v1";
+
+function isExportOption(value: unknown): value is ExportOption {
+  return exportOptions.some((option) => option.id === value);
+}
 
 export default function AiRichExportPage() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const hasRestoredDraftRef = useRef(false);
   const [content, setContent] = useState(defaultMarkdown);
   const [selectedFormat, setSelectedFormat] = useState<ExportOption>("docx");
   const [isExporting, setIsExporting] = useState(false);
@@ -83,6 +101,7 @@ export default function AiRichExportPage() {
   const [isCopyingImage, setIsCopyingImage] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
   const stats = useMemo(() => {
     const characters = content.length;
@@ -97,6 +116,78 @@ export default function AiRichExportPage() {
 
   const exportLabel = exportOptions.find((item) => item.id === selectedFormat)?.label;
   const previewContent = useMemo(() => normalizeMathMarkdown(content), [content]);
+  const draftSavedLabel = useMemo(() => {
+    if (!lastSavedAt) {
+      return null;
+    }
+
+    return new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(lastSavedAt));
+  }, [lastSavedAt]);
+
+  useEffect(() => {
+    try {
+      const rawDraft = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+
+      if (!rawDraft) {
+        hasRestoredDraftRef.current = true;
+        return;
+      }
+
+      const parsed = JSON.parse(rawDraft) as Partial<DraftPayload>;
+
+      if (typeof parsed.content === "string") {
+        setContent(parsed.content);
+      }
+
+      if (isExportOption(parsed.selectedFormat)) {
+        setSelectedFormat(parsed.selectedFormat);
+      }
+
+      if (typeof parsed.updatedAt === "string") {
+        setLastSavedAt(parsed.updatedAt);
+      }
+
+      if (
+        typeof parsed.content === "string" &&
+        parsed.content !== defaultMarkdown
+      ) {
+        setMessage("已自动恢复上次未完成的草稿。");
+      }
+    } catch {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } finally {
+      hasRestoredDraftRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasRestoredDraftRef.current) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const updatedAt = new Date().toISOString();
+      const payload: DraftPayload = {
+        content,
+        selectedFormat,
+        updatedAt,
+      };
+
+      try {
+        window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
+        setLastSavedAt(updatedAt);
+      } catch {
+        // Ignore storage quota and private-mode failures; exporting should still work.
+      }
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [content, selectedFormat]);
 
   const resetFeedback = () => {
     setMessage(null);
@@ -273,7 +364,9 @@ export default function AiRichExportPage() {
       setMessage(
         selectedFormat === "docx"
           ? "Word 文档已生成并开始下载。"
-          : "图片已生成并开始下载；长内容会自动分页。",
+          : selectedFormat === "pdf"
+            ? "PDF 文档已生成并开始下载。"
+            : "图片已生成并开始下载；长内容会自动分页。",
       );
     } catch (caughtError) {
       const nextError =
@@ -289,10 +382,10 @@ export default function AiRichExportPage() {
       title="AI 内容导出器"
       subtitle="把 AI 输出内容直接粘贴进来，实时预览后导出为 Word 或分页图片。"
       status="已上线"
-      maxWidthClassName="max-w-7xl"
+      maxWidthClassName="max-w-none"
     >
-      <div className="grid gap-5 xl:grid-cols-[1.08fr_0.92fr]">
-        <section className="rounded-[28px] border border-border bg-card/95 p-5 shadow-sm">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] 2xl:grid-cols-[minmax(780px,1.08fr)_minmax(680px,0.92fr)]">
+        <section className="rounded-[28px] border border-border bg-card/95 p-5 shadow-sm lg:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-foreground">内容输入</p>
@@ -300,8 +393,15 @@ export default function AiRichExportPage() {
                 支持 Markdown 风格内容。纯文本也可以直接粘贴。
               </p>
             </div>
-            <div className="rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
-              {stats.characters.toLocaleString()} 字符 / {stats.lines} 行
+            <div className="rounded-2xl border border-border bg-background px-3 py-1.5 text-right text-xs text-muted-foreground">
+              <div>
+                {stats.characters.toLocaleString()} 字符 / {stats.lines} 行
+              </div>
+              <div className="mt-1 text-[11px]">
+                {draftSavedLabel
+                  ? `草稿已自动保存于 ${draftSavedLabel}`
+                  : "草稿会自动保存在当前浏览器"}
+              </div>
             </div>
           </div>
 
@@ -355,7 +455,7 @@ export default function AiRichExportPage() {
                 resetFeedback();
               }
             }}
-            className="mt-4 min-h-[560px] w-full resize-y rounded-[22px] border border-border bg-background px-4 py-4 text-sm leading-7 text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring"
+            className="mt-4 min-h-[620px] w-full resize-y rounded-[22px] border border-border bg-background px-4 py-4 text-sm leading-7 text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring 2xl:min-h-[700px]"
             placeholder="把 AI 输出内容粘贴到这里..."
           />
 
@@ -374,7 +474,7 @@ export default function AiRichExportPage() {
               导出设置
             </div>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {exportOptions.map((option) => {
                 const Icon = option.icon;
                 const active = option.id === selectedFormat;
@@ -458,7 +558,7 @@ export default function AiRichExportPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-border bg-card/95 p-5 shadow-sm">
+        <section className="rounded-[28px] border border-border bg-card/95 p-5 shadow-sm lg:sticky lg:top-6 lg:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-foreground">实时预览</p>
@@ -471,7 +571,7 @@ export default function AiRichExportPage() {
             </div>
           </div>
 
-          <div className="ai-export-preview-stage mt-4 min-h-[560px] overflow-auto rounded-[22px] border border-border p-4 md:p-5">
+          <div className="ai-export-preview-stage mt-4 min-h-[620px] overflow-auto rounded-[22px] border border-border p-4 md:p-5 2xl:min-h-[700px]">
             <div ref={previewRef} className="ai-export-preview-page">
               <div className="markdown-renderer">
                 <ReactMarkdown

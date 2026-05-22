@@ -21,8 +21,8 @@ import {
   Document,
   ExternalHyperlink,
   HeadingLevel,
-  ImageRun,
   LevelFormat,
+  Math as DocxMath,
   Packer,
   Paragraph,
   Table,
@@ -35,8 +35,8 @@ import {
   type IParagraphOptions,
   type IRunOptions,
 } from "docx";
+import { createDocxMathFromLatex } from "@/lib/ai-export/docx-math";
 import { getSuggestedFileBase, parseMarkdown } from "@/lib/ai-export/markdown";
-import { renderFormulaAsset } from "@/lib/ai-export/math-render";
 
 interface InlineMathNode {
   type: "inlineMath";
@@ -71,10 +71,6 @@ const CODE_BG = "F8FAFC";
 const QUOTE_BG = "FAFAF9";
 const HEADER_BG = "F5EFE6";
 const LINK_COLOR = "2563EB";
-const DOCX_INLINE_FORMULA_SCALE = 0.76;
-const DOCX_BLOCK_FORMULA_SCALE = 0.62;
-const DOCX_BLOCK_FORMULA_MAX_WIDTH = 380;
-
 function headingLevel(depth: number) {
   switch (depth) {
     case 1:
@@ -126,35 +122,11 @@ function createTextRun(text: string, marks: InlineMarks = {}) {
   return new TextRun(options);
 }
 
-function scaleFormulaSize(
-  width: number,
-  height: number,
-  scale: number,
-  maxWidth?: number,
-) {
-  const scaledWidth = Math.max(1, Math.round(width * scale));
-  const scaledHeight = Math.max(1, Math.round(height * scale));
-
-  if (!maxWidth || scaledWidth <= maxWidth) {
-    return {
-      width: scaledWidth,
-      height: scaledHeight,
-    };
-  }
-
-  const ratio = maxWidth / scaledWidth;
-
-  return {
-    width: Math.round(scaledWidth * ratio),
-    height: Math.round(scaledHeight * ratio),
-  };
-}
-
 async function renderInlineChildren(
   nodes: PhrasingContent[],
   marks: InlineMarks = {},
-): Promise<(TextRun | ImageRun | ExternalHyperlink)[]> {
-  const output: (TextRun | ImageRun | ExternalHyperlink)[] = [];
+): Promise<(TextRun | DocxMath | ExternalHyperlink)[]> {
+  const output: (TextRun | DocxMath | ExternalHyperlink)[] = [];
 
   for (const node of nodes) {
     switch (node.type) {
@@ -194,22 +166,7 @@ async function renderInlineChildren(
         );
         break;
       case "inlineMath": {
-        const asset = await renderFormulaAsset((node as InlineMathNode).value, false);
-        const size = scaleFormulaSize(
-          asset.width,
-          asset.height,
-          DOCX_INLINE_FORMULA_SCALE,
-        );
-        output.push(
-          new ImageRun({
-            data: asset.pngBuffer,
-            type: "png",
-            transformation: {
-              width: size.width,
-              height: size.height,
-            },
-          }),
-        );
+        output.push(createDocxMathFromLatex((node as InlineMathNode).value));
         break;
       }
       case "break":
@@ -263,30 +220,13 @@ async function createHeading(node: Heading) {
 }
 
 async function createMathParagraph(formula: string) {
-  const asset = await renderFormulaAsset(formula, true);
-  const size = scaleFormulaSize(
-    asset.width,
-    asset.height,
-    DOCX_BLOCK_FORMULA_SCALE,
-    DOCX_BLOCK_FORMULA_MAX_WIDTH,
-  );
-
   return new Paragraph({
     alignment: AlignmentType.CENTER,
     spacing: {
       before: 40,
       after: 72,
     },
-    children: [
-      new ImageRun({
-        data: asset.pngBuffer,
-        type: "png",
-        transformation: {
-          width: size.width,
-          height: size.height,
-        },
-      }),
-    ],
+    children: [createDocxMathFromLatex(formula)],
   });
 }
 

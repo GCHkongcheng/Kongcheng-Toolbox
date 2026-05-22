@@ -51,13 +51,15 @@ export function HomeTopbar({
         <input
           type="text"
           placeholder={
-            isSitesView ? "搜索网址名称、描述或标签..." : "搜索工具或模板..."
+            isSitesView
+              ? "搜索网站名称、描述或标签..."
+              : "搜索工具或模板..."
           }
           value={searchQuery}
           onChange={(e) => onSearchQueryChange(e.target.value)}
           className={cn(
             "w-64 rounded-md border border-input bg-muted py-1.5 pl-8 pr-3 text-xs",
-            "placeholder:text-muted-foreground focus:bg-background focus:outline-none focus:ring-2 focus:ring-ring transition-all",
+            "placeholder:text-muted-foreground transition-all focus:bg-background focus:outline-none focus:ring-2 focus:ring-ring",
           )}
         />
       </div>
@@ -72,16 +74,16 @@ export function HomeTopbar({
 
       <div className="hidden items-center gap-2 sm:flex">
         <Link
-          href="/tools"
+          href="/"
           className="inline-flex rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         >
-          模块总览
+          首页
         </Link>
         <button
           onClick={() => onViewChange("sites-center")}
           className="inline-flex rounded-md border border-border px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         >
-          网址导航
+          网站导航
         </button>
         <a
           href="https://blog.gchkc.top"

@@ -17,6 +17,11 @@ import type {
 } from "mdast";
 import sharp from "sharp";
 import { createStoredZip } from "@/lib/ai-export/archive";
+import {
+  buildAiExportFontFaceCss,
+  getAiExportCodeFontFamily,
+  getAiExportSansFontFamily,
+} from "@/lib/ai-export/font-utils";
 import { getSuggestedFileBase, parseMarkdown } from "@/lib/ai-export/markdown";
 import {
   renderFormulaAsset,
@@ -79,6 +84,8 @@ const PAGE_HEIGHT = 1754;
 const PAGE_PADDING_X = 92;
 const PAGE_PADDING_Y = 96;
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_PADDING_X * 2;
+export const EXPORT_PAGE_WIDTH = PAGE_WIDTH;
+export const EXPORT_PAGE_HEIGHT = PAGE_HEIGHT;
 const BODY_COLOR = "#1f2937";
 const MUTED_COLOR = "#6b7280";
 const ACCENT_COLOR = "#b45309";
@@ -86,6 +93,8 @@ const BORDER_COLOR = "#d6d3d1";
 const PAPER_COLOR = "#fffaf2";
 const CODE_BG = "#f8fafc";
 const HEADER_BG = "#f5efe6";
+const SANS_FONT_FAMILY = getAiExportSansFontFamily();
+const CODE_FONT_FAMILY = getAiExportCodeFontFamily();
 
 interface InlineMathNode {
   type: "inlineMath";
@@ -137,6 +146,7 @@ function createPage(): PageState {
     elements: [
       `<rect width="${PAGE_WIDTH}" height="${PAGE_HEIGHT}" fill="${PAPER_COLOR}"/>`,
       `<rect x="56" y="56" width="${PAGE_WIDTH - 112}" height="${PAGE_HEIGHT - 112}" rx="28" fill="white" stroke="#efe8dc"/>`,
+      `<style>${buildAiExportFontFaceCss()}</style>`,
     ],
   };
 }
@@ -375,7 +385,9 @@ function renderLineSvg(line: RenderedLine, x: number, y: number, fontSize: numbe
       const attrs = [
         item.bold ? 'font-weight="700"' : "",
         item.italic ? 'font-style="italic"' : "",
-        item.code ? 'font-family="Consolas, SFMono-Regular, monospace"' : 'font-family="\'PingFang SC\',\'Microsoft YaHei UI\',\'Noto Sans SC\',sans-serif"',
+        item.code
+          ? `font-family="${CODE_FONT_FAMILY}"`
+          : `font-family="${SANS_FONT_FAMILY}"`,
         item.link ? `fill="${ACCENT_COLOR}"` : "",
         item.strike ? 'text-decoration="line-through"' : "",
       ]
@@ -512,7 +524,7 @@ function drawCodeBlock(context: RenderContext, node: Code, xOffset = 0) {
     ensurePageSpace(context, lineHeight + 16);
     context.page.elements.push(
       `<rect x="${PAGE_PADDING_X + xOffset}" y="${context.y}" width="${CONTENT_WIDTH - xOffset}" height="${lineHeight + 10}" rx="18" fill="${CODE_BG}" stroke="#e5e7eb"/>`,
-      `<text x="${PAGE_PADDING_X + xOffset + 20}" y="${context.y + 30}" fill="${BODY_COLOR}" font-size="${fontSize}" font-family="Consolas,'SFMono-Regular',monospace">${escapeXml(
+      `<text x="${PAGE_PADDING_X + xOffset + 20}" y="${context.y + 30}" fill="${BODY_COLOR}" font-size="${fontSize}" font-family="${CODE_FONT_FAMILY}">${escapeXml(
         line.length > 0 ? line : " ",
       )}</text>`,
     );
@@ -690,12 +702,23 @@ async function svgToBuffer(svg: string, format: ImageFormat) {
     : image.jpeg({ quality: 92 }).toBuffer();
 }
 
-export async function createImagesFromMarkdown(markdown: string, format: ImageFormat) {
+export async function renderMarkdownToImageBuffers(
+  markdown: string,
+  format: ImageFormat,
+) {
   const normalized = markdown.trim();
   const tree = parseMarkdown(normalized.length > 0 ? normalized : " ");
   const svgPages = await renderTree(tree);
   const buffers = await Promise.all(svgPages.map((svg) => svgToBuffer(svg, format)));
-  const fileBase = getSuggestedFileBase(normalized);
+
+  return {
+    fileBase: getSuggestedFileBase(normalized),
+    buffers,
+  };
+}
+
+export async function createImagesFromMarkdown(markdown: string, format: ImageFormat) {
+  const { fileBase, buffers } = await renderMarkdownToImageBuffers(markdown, format);
 
   if (buffers.length === 1) {
     return {

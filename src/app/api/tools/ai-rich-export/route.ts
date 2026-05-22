@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
 import { createDocxFromMarkdown } from "@/lib/ai-export/docx";
 import { createImagesFromMarkdown } from "@/lib/ai-export/image";
+import { createPdfFromMarkdown } from "@/lib/ai-export/pdf";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-type ExportFormat = "docx" | "png" | "jpg";
+type ExportFormat = "docx" | "pdf" | "png" | "jpg";
 
 function isExportFormat(value: unknown): value is ExportFormat {
-  return value === "docx" || value === "png" || value === "jpg";
+  return (
+    value === "docx" ||
+    value === "pdf" ||
+    value === "png" ||
+    value === "jpg"
+  );
 }
 
 export async function POST(request: Request) {
@@ -42,7 +48,9 @@ export async function POST(request: Request) {
     const file =
       format === "docx"
         ? await createDocxFromMarkdown(content)
-        : await createImagesFromMarkdown(content, format);
+        : format === "pdf"
+          ? await createPdfFromMarkdown(content)
+          : await createImagesFromMarkdown(content, format);
 
     const payload = Uint8Array.from(file.buffer);
 

@@ -12,21 +12,25 @@ interface SitePageShellProps {
 export function SitePageShell({
   title,
   description,
-  maxWidthClassName = "max-w-6xl",
+  maxWidthClassName = "max-w-none",
   children,
 }: SitePageShellProps) {
   return (
-    <main className="min-h-screen bg-background p-4 text-foreground lg:p-8">
-      <div className={cn("mx-auto", maxWidthClassName)}>
+    <main className="min-h-screen bg-background px-4 py-4 text-foreground lg:px-8 lg:py-8 xl:px-10">
+      <div className={cn("mx-auto w-full", maxWidthClassName)}>
         <ToolsTopNav />
 
-        <header className="mb-6">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <header className="mb-6 border-b border-border/70 pb-6">
+          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
             Kongcheng Toolbox
           </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight">{title}</h1>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight lg:text-3xl">
+            {title}
+          </h1>
           {description ? (
-            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              {description}
+            </p>
           ) : null}
         </header>
 

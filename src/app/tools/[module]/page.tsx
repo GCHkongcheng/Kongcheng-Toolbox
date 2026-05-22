@@ -50,7 +50,7 @@ export default async function ToolModulePage({
         title={meta.title}
         subtitle={pageConfig.embedded.subtitle}
         status={meta.status}
-        maxWidthClassName="max-w-6xl"
+        maxWidthClassName="max-w-none"
       >
         <section className="rounded-xl border border-border bg-card p-4 lg:p-5">
           <h2 className="text-sm font-semibold text-foreground">模块功能</h2>
@@ -99,7 +99,7 @@ export default async function ToolModulePage({
       title={meta.title}
       subtitle={meta.subtitle}
       status={meta.status}
-      maxWidthClassName="max-w-5xl"
+      maxWidthClassName="max-w-none"
     >
       <section className="rounded-xl border border-border bg-card p-5 lg:p-7">
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
