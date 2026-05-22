@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
+  <Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml"/>
+  <Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
+  <Relationship Id="rId6" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-6c6nmxqyttTjnJHxda3dl.png" TargetMode="Internal"/>
+  <Relationship Id="rId7" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-AFGbx4Mb4WCf5iD1zceMS.png" TargetMode="Internal"/>
+  <Relationship Id="rId8" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-5CXAFxmPIrDSLUcy0XXiF.png" TargetMode="Internal"/>
+  <Relationship Id="rId9" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-SIcrR1sCEDdKobGgp7bmj.png" TargetMode="Internal"/>
+  <Relationship Id="rId10" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-TN2fYMAtfbaNExivW3Bbx.png" TargetMode="Internal"/>
+  <Relationship Id="rId11" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-2jMaRMR4C9Y2Il5rEy485.png" TargetMode="Internal"/>
+  <Relationship Id="rId12" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-Rj8JWsnlOC2zkzSWMdM5d.png" TargetMode="Internal"/>
+  <Relationship Id="rId13" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-w0l4v1rMQiWhx54ZEILw7.png" TargetMode="Internal"/>
+  <Relationship Id="rId14" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-K6NkfEgyo_38LerFP4GsI.png" TargetMode="Internal"/>
+  <Relationship Id="rId15" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-Y3Lwb-lB3U0TA0ROyK47G.png" TargetMode="Internal"/>
+  <Relationship Id="rId16" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-8Ja88vAjtLZ0ifXiYLXkI.png" TargetMode="Internal"/>
+  <Relationship Id="rId17" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-XVeh3TAfwit2qzXIYx52q.png" TargetMode="Internal"/>
+  <Relationship Id="rId18" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-jY2jwOietRXFEiZfgRIX3.png" TargetMode="Internal"/>
+  <Relationship Id="rId19" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-hh94-e4NLj2ySm2nBWIVg.png" TargetMode="Internal"/>
+  <Relationship Id="rId20" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-0sIKQ1M839o3YY4U-vWaT.png" TargetMode="Internal"/>
+  <Relationship Id="rId21" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-2TsyYhbS6guUclTwCZJoS.png" TargetMode="Internal"/>
+  <Relationship Id="rId22" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-ZIvBFllyme27B4L4G49D7.png" TargetMode="Internal"/>
+  <Relationship Id="rId23" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-Eokbd30-5cdSpMQhRjkit.png" TargetMode="Internal"/>
+  <Relationship Id="rId24" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-r2xtYZCn2vWbyIuARDBa2.png" TargetMode="Internal"/>
+  <Relationship Id="rId25" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-Uxvfr8CO4aVN0P2bnuQIj.png" TargetMode="Internal"/>
+  <Relationship Id="rId26" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-LMaKodpISqqc-CbEUc_82.png" TargetMode="Internal"/>
+  <Relationship Id="rId27" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-6V2ITVkcGYS3omY5uyfz8.png" TargetMode="Internal"/>
+  <Relationship Id="rId28" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-JDPzDPSm1YH-Jlgz96cLf.png" TargetMode="Internal"/>
+  <Relationship Id="rId29" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-WVq8rk2FBLuSoUw6XemVI.png" TargetMode="Internal"/>
+  <Relationship Id="rId30" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-B_FZ1zNKBqw32waxwGoq0.png" TargetMode="Internal"/>
+  <Relationship Id="rId31" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-ZZh3_9o7knABRFN-uM80V.png" TargetMode="Internal"/>
+  <Relationship Id="rId32" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-lg6JRv94yBG9Gr_7Y1Qdk.png" TargetMode="Internal"/>
+  <Relationship Id="rId33" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-U2bNVWaFuX2hC-VA5ATwB.png" TargetMode="Internal"/>
+  <Relationship Id="rId34" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-ComMaEf0RGqa9jKBQ5TEa.png" TargetMode="Internal"/>
+  <Relationship Id="rId35" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-ZJdGfTuIcnMvLn--UoAwC.png" TargetMode="Internal"/>
+  <Relationship Id="rId36" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-h0-9czS654T9z5W7K7SW3.png" TargetMode="Internal"/>
+  <Relationship Id="rId37" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-aNfND0uKDqWNWBYskgsM7.png" TargetMode="Internal"/>
+  <Relationship Id="rId38" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-My5xPPwssB2BjMWxlqhmh.png" TargetMode="Internal"/>
+  <Relationship Id="rId39" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml" TargetMode="Internal"/>
+</Relationships>

@@ -1,7 +1,8 @@
+import type { ToolStatus } from "@/lib/tool-manifest";
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
-  status: "已上线" | "开发中";
+  status: ToolStatus;
   className?: string;
 }
 

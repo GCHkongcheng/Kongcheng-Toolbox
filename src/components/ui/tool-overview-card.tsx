@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { moduleMetas, type ToolDemo } from "@/lib/tool-modules";
+import { getModuleTitle, type ToolDemo } from "@/lib/tool-modules";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 interface ToolOverviewCardProps {
@@ -46,9 +46,7 @@ export function ToolOverviewCard({
 
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <Wrench size={13} className="text-primary" />
-          <span>
-            所属模块：{moduleMetas.find((m) => m.id === tool.category)?.title}
-          </span>
+          <span>所属模块：{getModuleTitle(tool.category)}</span>
         </div>
 
         <div

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { ToolStatus } from "@/lib/tool-manifest";
 import { cn } from "@/lib/utils";
 import { ToolsTopNav } from "@/components/ui/tools-top-nav";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -6,7 +7,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 interface ToolPageShellProps {
   title: string;
   subtitle: string;
-  status?: "已上线" | "开发中";
+  status?: ToolStatus;
   backHref?: string;
   backLabel?: string;
   maxWidthClassName?: string;

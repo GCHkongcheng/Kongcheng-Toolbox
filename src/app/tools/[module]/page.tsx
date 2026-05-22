@@ -1,7 +1,34 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Wrench, Sparkles } from "lucide-react";
-import { moduleMap, type ModuleId } from "@/lib/tool-modules";
+import { moduleIds, moduleMap, type ModuleId } from "@/lib/tool-modules";
+import { modulePageConfigs } from "@/lib/tool-module-pages";
 import { ToolPageShell } from "@/components/ui/tool-page-shell";
+
+export function generateStaticParams() {
+  return moduleIds.map((module) => ({ module }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ module: string }>;
+}): Promise<Metadata> {
+  const { module } = await params;
+  const meta = moduleMap[module as ModuleId];
+
+  if (!meta) {
+    return {};
+  }
+
+  return {
+    title: meta.title,
+    description: meta.subtitle,
+    alternates: {
+      canonical: `/tools/${meta.id}`,
+    },
+  };
+}
 
 export default async function ToolModulePage({
   params,
@@ -15,35 +42,30 @@ export default async function ToolModulePage({
     notFound();
   }
 
-  if (module === "prompt") {
+  const pageConfig = modulePageConfigs[module as ModuleId];
+
+  if (pageConfig?.embedded) {
     return (
       <ToolPageShell
         title={meta.title}
-        subtitle="已接入独立站点，支持在当前页面直接访问。"
+        subtitle={pageConfig.embedded.subtitle}
         status={meta.status}
         maxWidthClassName="max-w-6xl"
       >
         <section className="rounded-xl border border-border bg-card p-4 lg:p-5">
           <h2 className="text-sm font-semibold text-foreground">模块功能</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border border-border bg-background p-3">
-              <p className="text-sm font-medium">Prompt 模板管理器</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                已上线，支持模板检索、标签筛选和快速复用。
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-background p-3">
-              <p className="text-sm font-medium">变量模板工坊</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                开发中，用于变量占位与批量生成场景。
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-background p-3">
-              <p className="text-sm font-medium">团队模板库</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                规划中，支持团队共享、审核与版本管理。
-              </p>
-            </div>
+            {pageConfig.embedded.cards.map((card) => (
+              <div
+                key={card.title}
+                className="rounded-lg border border-border bg-background p-3"
+              >
+                <p className="text-sm font-medium">{card.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {card.description}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -51,18 +73,18 @@ export default async function ToolModulePage({
           <div className="mb-3 text-xs text-muted-foreground">
             若内嵌失败，可直接访问：
             <a
-              href="https://prompt.283947.xyz"
+              href={pageConfig.embedded.externalUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="ml-1 font-medium text-primary hover:underline"
             >
-              prompt.283947.xyz
+              {pageConfig.embedded.externalUrl.replace(/^https?:\/\//, "")}
             </a>
           </div>
 
           <iframe
-            title="Prompt 模板管理器"
-            src="https://prompt.283947.xyz"
+            title={pageConfig.embedded.embedTitle}
+            src={pageConfig.embedded.embedUrl}
             className="h-[78vh] w-full rounded-lg border border-border bg-background"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
@@ -97,8 +119,8 @@ export default async function ToolModulePage({
             <Wrench size={16} /> 模块状态说明
           </div>
           <p className="mt-2 leading-relaxed">
-            当前页面为二级模块占位 Demo，用于先打通“工具聚合首页 →
-            模块详情页”的导航链路。 后续可按模块接入真实交互与接口。
+            {pageConfig?.placeholder?.statusNote ??
+              "当前页面为二级模块占位 Demo，用于先打通“工具聚合首页 → 模块详情页”的导航链路。后续可按模块接入真实交互与接口。"}
           </p>
         </div>
       </section>

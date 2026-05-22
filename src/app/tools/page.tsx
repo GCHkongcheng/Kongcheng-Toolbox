@@ -1,42 +1,20 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { moduleMetas, toolDemos } from "@/lib/tool-modules";
 import { ModuleOverviewCard } from "@/components/ui/module-overview-card";
+import { SitePageShell } from "@/components/ui/site-page-shell";
 import { ToolOverviewCard } from "@/components/ui/tool-overview-card";
+
+export const metadata: Metadata = {
+  title: "模块总览",
+  description: "查看空城工具箱的模块布局、已上线工具与开发中的工具能力。",
+};
 
 export default function ToolsOverviewPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground p-4 lg:p-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Kongcheng Toolbox
-            </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight">
-              空城工具箱 · 模块总览
-            </h1>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">
-              首页
-            </Link>
-            <Link href="/?view=sites-center" className="hover:text-foreground">
-              网址导航
-            </Link>
-            <a
-              href="https://blog.gchkc.top"
-              className="hover:text-foreground"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              博客
-            </a>
-            <Link href="/about" className="hover:text-foreground">
-              关于
-            </Link>
-          </div>
-        </div>
-
+    <SitePageShell
+      title="空城工具箱 · 模块总览"
+      maxWidthClassName="max-w-6xl"
+    >
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {moduleMetas.map((module) => (
             <ModuleOverviewCard key={module.id} module={module} />
@@ -57,7 +35,6 @@ export default function ToolsOverviewPage() {
             ))}
           </div>
         </section>
-      </div>
-    </main>
+    </SitePageShell>
   );
 }

@@ -15,35 +15,36 @@ export function SiteLinkCard({
   onToggleFavorite,
 }: SiteLinkCardProps) {
   return (
-    <a
-      href={link.href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40"
-    >
+    <article className="group rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          {link.iconUrl ? (
-            <Image
-              src={link.iconUrl}
-              alt={`${link.name} icon`}
-              className="h-4 w-4 rounded-sm"
-              width={16}
-              height={16}
-            />
-          ) : (
-            <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-muted text-[10px] text-muted-foreground">
-              •
-            </span>
-          )}
-          <h3 className="text-xs font-semibold text-card-foreground">
-            {link.name}
-          </h3>
-        </div>
+        <a
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="min-w-0 flex-1"
+        >
+          <div className="flex items-center gap-2">
+            {link.iconUrl ? (
+              <Image
+                src={link.iconUrl}
+                alt={`${link.name} icon`}
+                className="h-4 w-4 rounded-sm"
+                width={16}
+                height={16}
+              />
+            ) : (
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-muted text-[10px] text-muted-foreground">
+                •
+              </span>
+            )}
+            <h3 className="truncate text-xs font-semibold text-card-foreground">
+              {link.name}
+            </h3>
+          </div>
+        </a>
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
+          onClick={() => {
             onToggleFavorite(link.id);
           }}
           className={cn(
@@ -62,13 +63,18 @@ export function SiteLinkCard({
         {link.summary}
       </p>
 
-      <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary">
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-flex items-center gap-1 text-[11px] text-primary"
+      >
         访问站点
         <ExternalLink
           size={12}
           className="transition-transform group-hover:translate-x-0.5"
         />
-      </div>
-    </a>
+      </a>
+    </article>
   );
 }

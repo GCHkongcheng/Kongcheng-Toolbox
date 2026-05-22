@@ -1,42 +1,18 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { SitePageShell } from "@/components/ui/site-page-shell";
+
+export const metadata: Metadata = {
+  title: "关于",
+  description: "了解空城工具箱的产品定位、设计原则与后续迭代方向。",
+};
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground p-4 lg:p-8">
-      <div className="mx-auto max-w-4xl">
-        <header className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Kongcheng Toolbox
-            </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight">
-              关于空城工具箱
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              一个面向创作与开发场景的 AI 工具聚合平台。
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">
-              首页
-            </Link>
-            <Link href="/tools" className="hover:text-foreground">
-              模块总览
-            </Link>
-            <Link href="/?view=sites-center" className="hover:text-foreground">
-              网址导航
-            </Link>
-            <a
-              href="https://blog.gchkc.top"
-              className="hover:text-foreground"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              博客
-            </a>
-          </div>
-        </header>
-
+    <SitePageShell
+      title="关于空城工具箱"
+      description="一个面向创作与开发场景的 AI 工具聚合平台。"
+      maxWidthClassName="max-w-4xl"
+    >
         <section className="rounded-xl border border-border bg-card p-6">
           <h2 className="text-lg font-semibold">我们在做什么</h2>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
@@ -58,7 +34,6 @@ export default function AboutPage() {
             阶段，欢迎持续关注版本更新。
           </p>
         </section>
-      </div>
-    </main>
+    </SitePageShell>
   );
 }

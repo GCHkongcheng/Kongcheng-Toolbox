@@ -1,4 +1,10 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { SitePageShell } from "@/components/ui/site-page-shell";
+
+export const metadata: Metadata = {
+  title: "博客",
+  description: "记录空城工具箱的产品迭代、使用技巧与设计思考。",
+};
 
 const posts = [
   {
@@ -26,31 +32,11 @@ const posts = [
 
 export default function BlogPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground p-4 lg:p-8">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">
-              Kongcheng Toolbox
-            </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight">博客</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              记录产品迭代、使用技巧与设计思考。
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">
-              首页
-            </Link>
-            <Link href="/tools" className="hover:text-foreground">
-              模块总览
-            </Link>
-            <Link href="/about" className="hover:text-foreground">
-              关于
-            </Link>
-          </div>
-        </header>
-
+    <SitePageShell
+      title="博客"
+      description="记录产品迭代、使用技巧与设计思考。"
+      maxWidthClassName="max-w-5xl"
+    >
         <div className="space-y-4">
           {posts.map((post) => (
             <article
@@ -77,7 +63,6 @@ export default function BlogPage() {
             </article>
           ))}
         </div>
-      </div>
-    </main>
+    </SitePageShell>
   );
 }

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;
   --card: 0 0% 100%;
@@ -22,9 +23,15 @@
   --ring: 240 10% 3.9%;
   --sidebar-bg: 240 4.8% 97%;
   --radius: 0.5rem;
+  --app-font-sans:
+    Inter, "PingFang SC", "Microsoft YaHei UI", "Noto Sans SC", "Segoe UI",
+    Arial, sans-serif;
+  --app-font-mono:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Monaco, monospace;
 }
 
 .dark {
+  color-scheme: dark;
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
   --card: 240 10% 3.9%;
@@ -64,8 +71,8 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   --color-sidebar-bg: hsl(var(--sidebar-bg));
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--app-font-sans);
+  --font-mono: var(--app-font-mono);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -74,7 +81,12 @@
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--app-font-sans);
+}
+
+.markdown-preview,
+.markdown-renderer {
+  color: hsl(var(--foreground));
 }
 
 .markdown-preview h1,
@@ -82,44 +94,107 @@ body {
 .markdown-preview h3,
 .markdown-preview h4,
 .markdown-preview h5,
-.markdown-preview h6 {
+.markdown-preview h6,
+.markdown-renderer h1,
+.markdown-renderer h2,
+.markdown-renderer h3,
+.markdown-renderer h4,
+.markdown-renderer h5,
+.markdown-renderer h6 {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.markdown-preview h1 {
+.markdown-preview h1,
+.markdown-renderer h1 {
   font-size: 1.5rem;
 }
 
-.markdown-preview h2 {
+.markdown-preview h2,
+.markdown-renderer h2 {
   font-size: 1.25rem;
 }
 
-.markdown-preview p {
+.markdown-preview h3,
+.markdown-renderer h3 {
+  font-size: 1.125rem;
+}
+
+.markdown-preview p,
+.markdown-renderer p {
   margin: 0.5rem 0;
   line-height: 1.7;
 }
 
 .markdown-preview ul,
-.markdown-preview ol {
+.markdown-preview ol,
+.markdown-renderer ul,
+.markdown-renderer ol {
   margin: 0.6rem 0;
   padding-left: 1.25rem;
 }
 
-.markdown-preview li {
+.markdown-preview ul,
+.markdown-renderer ul {
+  list-style-type: disc;
+}
+
+.markdown-preview ol,
+.markdown-renderer ol {
+  list-style-type: decimal;
+}
+
+.markdown-preview ul ul,
+.markdown-renderer ul ul {
+  list-style-type: circle;
+}
+
+.markdown-preview ul ul ul,
+.markdown-renderer ul ul ul {
+  list-style-type: square;
+}
+
+.markdown-preview ol ol,
+.markdown-renderer ol ol {
+  list-style-type: lower-alpha;
+}
+
+.markdown-preview ol ol ol,
+.markdown-renderer ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.markdown-preview li,
+.markdown-renderer li {
   margin: 0.25rem 0;
 }
 
-.markdown-preview blockquote {
+.markdown-preview li > p:first-child,
+.markdown-renderer li > p:first-child {
+  margin-top: 0;
+}
+
+.markdown-preview li > p:last-child,
+.markdown-renderer li > p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-preview blockquote,
+.markdown-renderer blockquote {
   margin: 0.75rem 0;
   border-left: 3px solid hsl(var(--border));
   padding-left: 0.75rem;
   color: hsl(var(--muted-foreground));
+  background: color-mix(in srgb, hsl(var(--muted)) 48%, white);
+  border-radius: 0.75rem;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
 }
 
-.markdown-preview code {
+.markdown-preview code,
+.markdown-renderer code {
   border: 1px solid hsl(var(--border));
   border-radius: 0.25rem;
   background: hsl(var(--muted));
@@ -127,36 +202,197 @@ body {
   font-size: 0.85em;
 }
 
-.markdown-preview pre {
+.markdown-preview pre,
+.markdown-renderer pre {
   margin: 0.75rem 0;
   overflow-x: auto;
   border: 1px solid hsl(var(--border));
-  border-radius: 0.5rem;
+  border-radius: 0.9rem;
   background: hsl(var(--muted));
   padding: 0.75rem;
 }
 
-.markdown-preview pre code {
+.markdown-preview pre code,
+.markdown-renderer pre code {
   border: 0;
   border-radius: 0;
   background: transparent;
   padding: 0;
 }
 
-.markdown-preview table {
+.markdown-preview table,
+.markdown-renderer table {
   width: 100%;
   border-collapse: collapse;
   margin: 0.75rem 0;
 }
 
 .markdown-preview th,
-.markdown-preview td {
+.markdown-preview td,
+.markdown-renderer th,
+.markdown-renderer td {
   border: 1px solid hsl(var(--border));
   padding: 0.4rem 0.5rem;
   text-align: left;
+  vertical-align: top;
 }
 
-.markdown-preview a {
+.markdown-preview th,
+.markdown-renderer th {
+  background: color-mix(in srgb, hsl(var(--muted)) 58%, white);
+}
+
+.markdown-preview hr,
+.markdown-renderer hr {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.markdown-preview a,
+.markdown-renderer a {
   color: hsl(var(--primary));
   text-decoration: underline;
+}
+
+.markdown-preview .katex-display,
+.markdown-renderer .katex-display {
+  margin: 1rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0.1rem;
+}
+
+.markdown-preview .katex,
+.markdown-renderer .katex {
+  font-size: 1.06em;
+}
+
+.ai-export-preview-stage {
+  background:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.08), transparent 26%),
+    linear-gradient(180deg, #fffdf8, #f8f5ef);
+}
+
+.ai-export-preview-page {
+  width: min(100%, 960px);
+  min-height: 1180px;
+  margin: 0 auto;
+  border: 1px solid rgba(214, 211, 209, 0.9);
+  border-radius: 1.5rem;
+  background: white;
+  padding: 2.9rem 3.3rem 3.2rem;
+  box-shadow:
+    0 26px 60px rgba(15, 23, 42, 0.06),
+    0 2px 12px rgba(15, 23, 42, 0.04);
+}
+
+.ai-export-preview-page .markdown-renderer {
+  font-size: 1.18rem;
+  line-height: 1.9;
+  color: #1f2937;
+}
+
+.ai-export-preview-page .markdown-renderer h1,
+.ai-export-preview-page .markdown-renderer h2,
+.ai-export-preview-page .markdown-renderer h3,
+.ai-export-preview-page .markdown-renderer h4,
+.ai-export-preview-page .markdown-renderer h5,
+.ai-export-preview-page .markdown-renderer h6 {
+  color: #111827;
+}
+
+.ai-export-preview-page .markdown-renderer h1 {
+  font-size: 2.4rem;
+  margin-top: 0.1rem;
+  margin-bottom: 0.8rem;
+}
+
+.ai-export-preview-page .markdown-renderer h2 {
+  font-size: 2.05rem;
+  margin-top: 1.9rem;
+  margin-bottom: 0.95rem;
+}
+
+.ai-export-preview-page .markdown-renderer h3 {
+  font-size: 1.55rem;
+  margin-top: 1.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.ai-export-preview-page .markdown-renderer p {
+  margin: 0.75rem 0;
+  line-height: 1.88;
+}
+
+.ai-export-preview-page .markdown-renderer hr {
+  margin: 1.5rem 0 1.75rem;
+}
+
+.ai-export-preview-page .markdown-renderer ol,
+.ai-export-preview-page .markdown-renderer ul {
+  padding-left: 2.1rem;
+}
+
+.ai-export-preview-page .markdown-renderer ol {
+  margin: 0.95rem 0 0.65rem;
+}
+
+.ai-export-preview-page .markdown-renderer ul {
+  margin: 0.45rem 0 1rem;
+}
+
+.ai-export-preview-page .markdown-renderer li {
+  margin: 0.35rem 0;
+}
+
+.ai-export-preview-page .markdown-renderer li::marker {
+  color: #111827;
+  font-weight: 700;
+}
+
+.ai-export-preview-page .markdown-renderer > ol > li {
+  padding-left: 0.15rem;
+}
+
+.ai-export-preview-page .markdown-renderer > ol > li > p:first-child {
+  font-size: 1.06em;
+}
+
+.ai-export-preview-page .markdown-renderer .katex-display {
+  margin: 1.35rem 0 1.45rem;
+  padding: 0.45rem 0;
+}
+
+.ai-export-preview-page .markdown-renderer .katex {
+  font-size: 1.26em;
+}
+
+.ai-export-preview-page .markdown-renderer ul .katex {
+  font-size: 1.18em;
+}
+
+.ai-export-preview-page .markdown-renderer strong {
+  color: #111827;
+}
+
+@media (max-width: 900px) {
+  .ai-export-preview-page {
+    width: 100%;
+    min-height: 0;
+    padding: 1.8rem 1.35rem 2rem;
+    border-radius: 1.2rem;
+  }
+
+  .ai-export-preview-page .markdown-renderer {
+    font-size: 1.02rem;
+  }
+
+  .ai-export-preview-page .markdown-renderer h2 {
+    font-size: 1.72rem;
+  }
+
+  .ai-export-preview-page .markdown-renderer h3 {
+    font-size: 1.35rem;
+  }
 }

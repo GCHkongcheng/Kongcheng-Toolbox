@@ -1,33 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { SidebarWidgetsData } from "@/lib/sidebar-widgets";
 
-interface SidebarWidgetsData {
-  nowIso: string;
-  timezone: string;
-  weather: {
-    city: string;
-    temperatureC: number;
-    description: string;
-  } | null;
-  crypto: {
-    btcUsd: number;
-    btcCny: number;
-  } | null;
-  fx: {
-    usdCny: number;
-  } | null;
-  gold: {
-    xauUsd: number;
-    unit: string;
-  } | null;
+interface SidebarWidgetsProps {
+  initialData: SidebarWidgetsData | null;
 }
 
-export function SidebarWidgets() {
+export function SidebarWidgets({ initialData }: SidebarWidgetsProps) {
   const [widgetsData, setWidgetsData] = useState<SidebarWidgetsData | null>(
-    null,
+    initialData,
   );
-  const [widgetsLoading, setWidgetsLoading] = useState(true);
   const [widgetsError, setWidgetsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,15 +36,14 @@ export function SidebarWidgets() {
         }
 
         setWidgetsError("轻量 API 暂时不可用");
-      } finally {
-        if (active) {
-          setWidgetsLoading(false);
-        }
       }
     };
 
-    loadWidgets().catch(() => {});
     const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
       loadWidgets().catch(() => {});
     }, 120000);
 
@@ -75,9 +57,9 @@ export function SidebarWidgets() {
     <div className="rounded-lg border border-border bg-card p-3 text-xs">
       <p className="font-medium text-foreground">轻量资讯</p>
 
-      {widgetsLoading && !widgetsData ? (
+      {!widgetsData && !widgetsError ? (
         <p className="mt-2 text-muted-foreground">加载中...</p>
-      ) : widgetsError && !widgetsData ? (
+      ) : !widgetsData && widgetsError ? (
         <p className="mt-2 text-muted-foreground">{widgetsError}</p>
       ) : widgetsData ? (
         <div className="mt-2 space-y-1.5 text-muted-foreground">
