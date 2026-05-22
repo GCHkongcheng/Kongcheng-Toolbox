@@ -4,7 +4,11 @@ import { NextResponse } from "next/server";
 const moduleViews = new Set(["prompt", "writing", "code", "docs", "learning"]);
 
 function getLegacyViewPath(view: string | null) {
-  if (!view || view === "all") {
+  if (!view) {
+    return null;
+  }
+
+  if (view === "all") {
     return "/";
   }
 
