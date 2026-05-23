@@ -19,6 +19,7 @@ import sharp from "sharp";
 import { createStoredZip } from "@/lib/ai-export/archive";
 import {
   buildAiExportFontFaceCss,
+  ensureAiExportFontRuntime,
   getAiExportCodeFontFamily,
   getAiExportSansFontFamily,
 } from "@/lib/ai-export/font-utils";
@@ -696,6 +697,7 @@ async function renderTree(tree: Root) {
 }
 
 async function svgToBuffer(svg: string, format: ImageFormat) {
+  ensureAiExportFontRuntime();
   const image = sharp(Buffer.from(svg));
   return format === "png"
     ? image.png().toBuffer()

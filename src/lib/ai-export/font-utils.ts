@@ -1,7 +1,9 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 
 const FONT_FAMILY_NAME = "AiExportNotoSansSC";
+const FONT_FAMILY_REAL_NAME = "Noto Sans SC";
 
 const FONT_CANDIDATES = [
   process.env.AI_EXPORT_FONT_PATH,
@@ -10,26 +12,86 @@ const FONT_CANDIDATES = [
 ].filter((value): value is string => typeof value === "string" && value.length > 0);
 
 let cachedFontDataUri: string | null | undefined;
+let cachedFontPath: string | null | undefined;
+let didConfigureFontRuntime = false;
+
+function escapeXmlAttribute(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function resolveFontPath() {
+  if (cachedFontPath !== undefined) {
+    return cachedFontPath;
+  }
+
+  for (const candidate of FONT_CANDIDATES) {
+    if (existsSync(candidate)) {
+      cachedFontPath = candidate;
+      return cachedFontPath;
+    }
+  }
+
+  cachedFontPath = null;
+  return null;
+}
 
 function resolveFontDataUri() {
   if (cachedFontDataUri !== undefined) {
     return cachedFontDataUri;
   }
 
-  for (const candidate of FONT_CANDIDATES) {
-    if (existsSync(candidate)) {
-      const buffer = readFileSync(candidate);
-      cachedFontDataUri = `data:font/ttf;base64,${buffer.toString("base64")}`;
-      return cachedFontDataUri;
-    }
+  const fontPath = resolveFontPath();
+
+  if (fontPath) {
+    const buffer = readFileSync(fontPath);
+    cachedFontDataUri = `data:font/ttf;base64,${buffer.toString("base64")}`;
+    return cachedFontDataUri;
   }
 
   cachedFontDataUri = null;
   return null;
 }
 
+export function ensureAiExportFontRuntime() {
+  if (didConfigureFontRuntime) {
+    return;
+  }
+
+  didConfigureFontRuntime = true;
+
+  const fontPath = resolveFontPath();
+
+  if (!fontPath || process.env.FONTCONFIG_FILE) {
+    return;
+  }
+
+  const fontCacheDir = join(tmpdir(), "ai-export-fontconfig-cache");
+  const fontConfigPath = join(tmpdir(), "ai-export-fonts.conf");
+  mkdirSync(fontCacheDir, { recursive: true });
+
+  const fontsConf = `<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <dir>${escapeXmlAttribute(dirname(fontPath))}</dir>
+  <cachedir>${escapeXmlAttribute(fontCacheDir)}</cachedir>
+  <alias>
+    <family>${FONT_FAMILY_NAME}</family>
+    <prefer>
+      <family>${FONT_FAMILY_REAL_NAME}</family>
+    </prefer>
+  </alias>
+</fontconfig>`;
+
+  writeFileSync(fontConfigPath, fontsConf);
+  process.env.FONTCONFIG_FILE = fontConfigPath;
+}
+
 export function getAiExportSansFontFamily() {
-  return `'${FONT_FAMILY_NAME}', 'Noto Sans SC', 'Microsoft YaHei UI', 'PingFang SC', sans-serif`;
+  return `'${FONT_FAMILY_REAL_NAME}', '${FONT_FAMILY_NAME}', 'Microsoft YaHei UI', 'PingFang SC', sans-serif`;
 }
 
 export function getAiExportCodeFontFamily() {
