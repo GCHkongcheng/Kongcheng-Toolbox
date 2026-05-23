@@ -10,6 +10,7 @@ interface ToolPageShellProps {
   status?: ToolStatus;
   backHref?: string;
   backLabel?: string;
+  headerActions?: ReactNode;
   maxWidthClassName?: string;
   children: ReactNode;
 }
@@ -20,6 +21,7 @@ export function ToolPageShell({
   status,
   backHref = "/",
   backLabel = "返回空城工具箱",
+  headerActions,
   maxWidthClassName = "max-w-none",
   children,
 }: ToolPageShellProps) {
@@ -29,7 +31,7 @@ export function ToolPageShell({
         <ToolsTopNav backHref={backHref} backLabel={backLabel} />
 
         <header className="mb-6 flex flex-col gap-4 border-b border-border/70 pb-6 md:flex-row md:items-start md:justify-between">
-          <div>
+          <div className="min-w-0">
             <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
               Kongcheng Toolbox
             </p>
@@ -40,7 +42,12 @@ export function ToolPageShell({
               {subtitle}
             </p>
           </div>
-          {status ? <StatusBadge status={status} /> : null}
+          {status || headerActions ? (
+            <div className="flex w-full flex-col items-start gap-3 md:w-auto md:items-end">
+              {status ? <StatusBadge status={status} /> : null}
+              {headerActions}
+            </div>
+          ) : null}
         </header>
 
         {children}

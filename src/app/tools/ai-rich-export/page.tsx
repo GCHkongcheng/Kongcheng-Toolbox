@@ -7,6 +7,8 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import {
+  AlertCircle,
+  CheckCircle2,
   ClipboardPaste,
   Copy,
   Download,
@@ -15,21 +17,19 @@ import {
   FileText,
   LoaderCircle,
   RotateCcw,
-  Sparkles,
+  X,
 } from "lucide-react";
 import { ToolPageShell } from "@/components/ui/tool-page-shell";
 import { normalizeMathMarkdown } from "@/lib/ai-export/math";
 
 const defaultMarkdown = `# AI 内容导出示例
 
-把 AI 输出内容直接粘贴到这里，然后选择导出为 Word 或图片。
+把 AI 输出内容直接粘贴到这里，然后选择导出为 Word、PDF 或图片。
 
 ## 支持的格式
-
-- 标题与分级结构
-- **加粗**、*斜体*、\`行内代码\`
-- 无序列表和有序列表
-- 表格与代码块
+- 标题与分级结构、**加粗**、*斜体*、\`行内代码\`
+- 无序列表和有序列表、表格与代码块
+- 数学公式：$E = mc^2$，也支持独立公式块
 
 ## 示例表格
 
@@ -39,44 +39,65 @@ const defaultMarkdown = `# AI 内容导出示例
 | 图片导出 | 自动换行，长内容自动分页 | 可用 |
 
 ## 示例代码块
-
 \`\`\`ts
 function greet(name: string) {
   return \`你好，\${name}\`;
 }
 \`\`\`
 
-> 长内容导出图片时，如果超过一页，会自动分页并打包成 ZIP 下载。
-`;
+> 长内容导出图片时，如果超过一页，会自动分页并打包成 ZIP 下载。`;
 
 const exportOptions = [
   {
     id: "docx",
-    label: "Word 文档",
-    hint: "导出为 .docx，适合继续编辑和归档",
+    label: "Word",
+    title: "Word 文档",
+    hint: "适合继续编辑、归档和二次排版",
     icon: FileText,
   },
   {
     id: "pdf",
-    label: "PDF 文档",
-    hint: "导出为 .pdf，适合打印、分享和固定版式",
+    label: "PDF",
+    title: "PDF 文档",
+    hint: "适合打印、分发和固定版式",
     icon: FileText,
   },
   {
     id: "png",
-    label: "PNG 图片",
-    hint: "清晰无损，长内容会自动分页",
+    label: "PNG",
+    title: "PNG 图片",
+    hint: "清晰无损，长内容自动分页",
     icon: FileImage,
   },
   {
     id: "jpg",
-    label: "JPG 图片",
+    label: "JPG",
+    title: "JPG 图片",
     hint: "体积更小，适合快速分享",
     icon: FileImage,
   },
 ] as const;
 
+const previewOptions = [
+  {
+    id: "web",
+    label: "网页预览",
+    hint: "适合快速检查 Markdown 结构",
+  },
+  {
+    id: "a4",
+    label: "A4 预览",
+    hint: "接近 PDF 和分页图片效果",
+  },
+  {
+    id: "long",
+    label: "长图预览",
+    hint: "用于检查复制长图效果",
+  },
+] as const;
+
 type ExportOption = (typeof exportOptions)[number]["id"];
+type PreviewMode = (typeof previewOptions)[number]["id"];
 type DraftPayload = {
   content: string;
   selectedFormat: ExportOption;
@@ -95,13 +116,13 @@ export default function AiRichExportPage() {
   const hasRestoredDraftRef = useRef(false);
   const [content, setContent] = useState(defaultMarkdown);
   const [selectedFormat, setSelectedFormat] = useState<ExportOption>("docx");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("a4");
   const [isExporting, setIsExporting] = useState(false);
   const [isPasting, setIsPasting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [isCopyingImage, setIsCopyingImage] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
   const stats = useMemo(() => {
     const characters = content.length;
@@ -114,19 +135,11 @@ export default function AiRichExportPage() {
     return { characters, lines, words };
   }, [content]);
 
-  const exportLabel = exportOptions.find((item) => item.id === selectedFormat)?.label;
+  const selectedOption =
+    exportOptions.find((item) => item.id === selectedFormat) ?? exportOptions[0];
+  const selectedPreviewOption =
+    previewOptions.find((item) => item.id === previewMode) ?? previewOptions[1];
   const previewContent = useMemo(() => normalizeMathMarkdown(content), [content]);
-  const draftSavedLabel = useMemo(() => {
-    if (!lastSavedAt) {
-      return null;
-    }
-
-    return new Intl.DateTimeFormat("zh-CN", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(lastSavedAt));
-  }, [lastSavedAt]);
-
   useEffect(() => {
     try {
       const rawDraft = window.localStorage.getItem(DRAFT_STORAGE_KEY);
@@ -144,10 +157,6 @@ export default function AiRichExportPage() {
 
       if (isExportOption(parsed.selectedFormat)) {
         setSelectedFormat(parsed.selectedFormat);
-      }
-
-      if (typeof parsed.updatedAt === "string") {
-        setLastSavedAt(parsed.updatedAt);
       }
 
       if (
@@ -178,7 +187,6 @@ export default function AiRichExportPage() {
 
       try {
         window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
-        setLastSavedAt(updatedAt);
       } catch {
         // Ignore storage quota and private-mode failures; exporting should still work.
       }
@@ -188,6 +196,23 @@ export default function AiRichExportPage() {
       window.clearTimeout(timeoutId);
     };
   }, [content, selectedFormat]);
+
+  useEffect(() => {
+    if (!message && !error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(
+      () => {
+        resetFeedback();
+      },
+      error ? 5200 : 3600,
+    );
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [error, message]);
 
   const resetFeedback = () => {
     setMessage(null);
@@ -331,7 +356,7 @@ export default function AiRichExportPage() {
       const response = await fetch("/api/tools/ai-rich-export", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json; charset=utf-8",
         },
         body: JSON.stringify({
           content,
@@ -377,213 +402,247 @@ export default function AiRichExportPage() {
     }
   };
 
+  const exportPanel = (
+    <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:flex-nowrap md:justify-end">
+      <button
+        type="button"
+        onClick={handleCopyAsLongImage}
+        disabled={isCopyingImage || content.trim().length === 0}
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-border bg-background px-5 text-sm font-bold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isCopyingImage ? (
+          <LoaderCircle size={16} className="animate-spin" />
+        ) : (
+          <FileImage size={16} />
+        )}
+        {isCopyingImage ? "复制中" : "复制预览长图"}
+      </button>
+
+      <label htmlFor="export-format" className="sr-only">
+        导出格式
+      </label>
+      <select
+        id="export-format"
+        value={selectedFormat}
+        title={selectedOption.hint}
+        onChange={(event) => setSelectedFormat(event.target.value as ExportOption)}
+        className="h-10 min-w-36 rounded-full border border-border bg-background px-4 pr-9 text-sm font-bold text-foreground outline-none transition hover:border-foreground/30 focus:border-foreground/50 focus:ring-4 focus:ring-foreground/10"
+      >
+        {exportOptions.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.title}
+          </option>
+        ))}
+      </select>
+
+      <button
+        type="button"
+        onClick={handleExport}
+        disabled={isExporting || content.trim().length === 0}
+        className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isExporting ? (
+          <LoaderCircle size={16} className="animate-spin" />
+        ) : (
+          <Download size={16} />
+        )}
+        {isExporting ? "生成中" : "开始导出"}
+      </button>
+    </div>
+  );
+
   return (
     <ToolPageShell
       title="AI 内容导出器"
-      subtitle="把 AI 输出内容直接粘贴进来，实时预览后导出为 Word 或分页图片。"
+      subtitle="粘贴 AI 回复、Markdown 草稿或普通文本，实时预览后导出为 Word、PDF 或分页图片。"
       status="已上线"
+      headerActions={exportPanel}
       maxWidthClassName="max-w-none"
     >
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] 2xl:grid-cols-[minmax(780px,1.08fr)_minmax(680px,0.92fr)]">
-        <section className="rounded-[28px] border border-border bg-card/95 p-5 shadow-sm lg:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">内容输入</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                支持 Markdown 风格内容。纯文本也可以直接粘贴。
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-background px-3 py-1.5 text-right text-xs text-muted-foreground">
-              <div>
-                {stats.characters.toLocaleString()} 字符 / {stats.lines} 行
-              </div>
-              <div className="mt-1 text-[11px]">
-                {draftSavedLabel
-                  ? `草稿已自动保存于 ${draftSavedLabel}`
-                  : "草稿会自动保存在当前浏览器"}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={handlePaste}
-              disabled={isPasting}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <ClipboardPaste size={15} />
-              {isPasting ? "正在粘贴..." : "一键粘贴"}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCopy}
-              disabled={isCopying || content.trim().length === 0}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Copy size={15} />
-              {isCopying ? "正在复制..." : "复制内容"}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleClear}
-              disabled={content.length === 0}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Eraser size={15} />
-              清空
-            </button>
-
-            <button
-              type="button"
-              onClick={handleRestoreSample}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent"
-            >
-              <RotateCcw size={15} />
-              恢复示例
-            </button>
-          </div>
-
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(event) => {
-              setContent(event.target.value);
-              if (message || error) {
-                resetFeedback();
-              }
-            }}
-            className="mt-4 min-h-[620px] w-full resize-y rounded-[22px] border border-border bg-background px-4 py-4 text-sm leading-7 text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring 2xl:min-h-[700px]"
-            placeholder="把 AI 输出内容粘贴到这里..."
-          />
-
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-border bg-background/70 px-4 py-3 text-xs leading-5 text-muted-foreground">
-            <div>
-              小提示：支持直接粘贴 AI 回答、Markdown 草稿或纯文本内容。
-            </div>
-            <div>
-              支持 `$...$`、`$$...$$`，也兼容旧式 `[` `]` 公式块。
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-[22px] border border-dashed border-border bg-background/80 p-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Sparkles size={16} className="text-primary" />
-              导出设置
-            </div>
-
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {exportOptions.map((option) => {
-                const Icon = option.icon;
-                const active = option.id === selectedFormat;
-
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setSelectedFormat(option.id)}
-                    className={`rounded-[20px] border px-4 py-4 text-left transition ${
-                      active
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                        : "border-border bg-card hover:border-primary/40 hover:bg-accent"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon size={18} />
-                      <span className="text-sm font-semibold">{option.label}</span>
-                    </div>
-                    <p
-                      className={`mt-2 text-xs leading-5 ${
-                        active ? "text-primary-foreground/85" : "text-muted-foreground"
-                      }`}
-                    >
-                      {option.hint}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs leading-5 text-muted-foreground">
-                当前导出：{exportLabel}
-                <br />
-                图片超出一页时，会自动拆分多页并打包下载。
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyAsLongImage}
-                  disabled={isCopyingImage || content.trim().length === 0}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground transition hover:border-primary/40 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isCopyingImage ? (
-                    <LoaderCircle size={16} className="animate-spin" />
-                  ) : (
-                    <FileImage size={16} />
-                  )}
-                  {isCopyingImage ? "正在复制..." : "复制为长图"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleExport}
-                  disabled={isExporting || content.trim().length === 0}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-92 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isExporting ? (
-                    <LoaderCircle size={16} className="animate-spin" />
-                  ) : (
-                    <Download size={16} />
-                  )}
-                  {isExporting ? "正在生成..." : "开始导出"}
-                </button>
-              </div>
-            </div>
-
-            {message ? (
-              <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                {message}
-              </p>
-            ) : null}
-
+      {message || error ? (
+        <div className="fixed right-4 top-20 z-50 max-w-[calc(100vw-2rem)] md:right-8">
+          <div
+            role={error ? "alert" : "status"}
+            aria-live={error ? "assertive" : "polite"}
+            className={`flex w-full max-w-sm items-start gap-3 rounded-2xl border px-4 py-3 text-sm shadow-2xl backdrop-blur ${
+              error
+                ? "border-rose-200 bg-rose-50/95 text-rose-800 shadow-rose-950/10"
+                : "border-emerald-200 bg-emerald-50/95 text-emerald-800 shadow-emerald-950/10"
+            }`}
+          >
             {error ? (
-              <p className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                {error}
-              </p>
-            ) : null}
+              <AlertCircle className="mt-0.5 shrink-0" size={18} />
+            ) : (
+              <CheckCircle2 className="mt-0.5 shrink-0" size={18} />
+            )}
+            <p className="min-w-0 flex-1 font-medium leading-5">
+              {error ?? message}
+            </p>
+            <button
+              type="button"
+              onClick={resetFeedback}
+              className="rounded-full p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"
+              aria-label="关闭提示"
+            >
+              <X size={14} />
+            </button>
           </div>
-        </section>
+        </div>
+      ) : null}
 
-        <section className="rounded-[28px] border border-border bg-card/95 p-5 shadow-sm lg:sticky lg:top-6 lg:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">实时预览</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                预览样式会尽量贴近导出效果，方便检查结构和排版。
-              </p>
-            </div>
-            <div className="rounded-full bg-background px-3 py-1 text-xs text-muted-foreground">
-              {stats.words.toLocaleString()} 词
-            </div>
-          </div>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,0.96fr)_minmax(560px,1.04fr)] 2xl:grid-cols-[minmax(720px,0.95fr)_minmax(720px,1.05fr)]">
+        <section className="space-y-5">
+          <div className="overflow-hidden rounded-[30px] border border-border bg-card shadow-sm">
+            <div className="border-b border-border/70 bg-muted/30 px-5 py-4 lg:px-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-base font-bold text-foreground">内容输入</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    支持 Markdown，也可以直接粘贴普通文本。
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-border bg-background text-center text-xs">
+                  <div className="px-3 py-2">
+                    <p className="font-bold text-foreground">
+                      {stats.characters.toLocaleString()}
+                    </p>
+                    <p className="text-muted-foreground">字符</p>
+                  </div>
+                  <div className="border-x border-border px-3 py-2">
+                    <p className="font-bold text-foreground">{stats.lines}</p>
+                    <p className="text-muted-foreground">行</p>
+                  </div>
+                  <div className="px-3 py-2">
+                    <p className="font-bold text-foreground">
+                      {stats.words.toLocaleString()}
+                    </p>
+                    <p className="text-muted-foreground">词段</p>
+                  </div>
+                </div>
+              </div>
 
-          <div className="ai-export-preview-stage mt-4 min-h-[620px] overflow-auto rounded-[22px] border border-border p-4 md:p-5 2xl:min-h-[700px]">
-            <div ref={previewRef} className="ai-export-preview-page">
-              <div className="markdown-renderer">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkMath]}
-                  rehypePlugins={[rehypeKatex]}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handlePaste}
+                  disabled={isPasting}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {content.trim().length > 0 ? previewContent : "请输入内容后即可预览。"}
-                </ReactMarkdown>
+                  <ClipboardPaste size={15} />
+                  {isPasting ? "正在粘贴..." : "一键粘贴"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  disabled={isCopying || content.trim().length === 0}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Copy size={15} />
+                  {isCopying ? "正在复制..." : "复制内容"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRestoreSample}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent"
+                >
+                  <RotateCcw size={15} />
+                  恢复示例
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  disabled={content.length === 0}
+                  className="inline-flex items-center gap-2 rounded-full border border-transparent px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Eraser size={15} />
+                  清空
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.09),transparent_30%),linear-gradient(180deg,#ffffff,#fffdf8)] p-4 lg:p-5">
+              <textarea
+                ref={textareaRef}
+                value={content}
+                onChange={(event) => {
+                  setContent(event.target.value);
+                  if (message || error) {
+                    resetFeedback();
+                  }
+                }}
+                className="min-h-[520px] w-full resize-y rounded-[24px] border border-amber-100 bg-white/90 px-4 py-4 font-mono text-sm leading-7 text-slate-800 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 2xl:min-h-[640px]"
+                placeholder="把 AI 输出内容粘贴到这里..."
+              />
+
+              <div className="mt-4 grid gap-3 text-xs leading-5 text-slate-600 md:grid-cols-2">
+                <div className="rounded-2xl border border-amber-100 bg-white/80 px-4 py-3">
+                  小提示：适合粘贴 ChatGPT、Claude、通义等 AI 回答，也支持 Markdown 草稿。
+                </div>
+                <div className="rounded-2xl border border-sky-100 bg-white/80 px-4 py-3">
+                  数学公式支持 `$...$`、`$$...$$`，也兼容旧式 `[` `]` 公式块。
+                </div>
               </div>
             </div>
           </div>
         </section>
+
+        <aside className="xl:sticky xl:top-6">
+          <section className="rounded-[30px] border border-border bg-card p-5 shadow-sm lg:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-base font-bold text-foreground">导出效果预览</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {selectedPreviewOption.hint}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="preview-mode" className="sr-only">
+                  预览模式
+                </label>
+                <select
+                  id="preview-mode"
+                  value={previewMode}
+                  onChange={(event) =>
+                    setPreviewMode(event.target.value as PreviewMode)
+                  }
+                  className="h-9 rounded-full border border-border bg-background px-3 pr-8 text-xs font-bold text-foreground shadow-sm outline-none transition hover:border-foreground/30 focus:border-foreground/50 focus:ring-4 focus:ring-foreground/10"
+                >
+                  {previewOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+                  {stats.words.toLocaleString()} 词段
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`ai-export-preview-stage ai-export-preview-stage--${previewMode} mt-4 overflow-auto rounded-[26px] border border-border p-4 md:p-5`}
+            >
+              <div
+                ref={previewRef}
+                className={`ai-export-preview-page ai-export-preview-page--${previewMode}`}
+              >
+                <div className="markdown-renderer">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
+                    {content.trim().length > 0
+                      ? previewContent
+                      : "请输入内容后即可预览。"}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          </section>
+        </aside>
       </div>
     </ToolPageShell>
   );
