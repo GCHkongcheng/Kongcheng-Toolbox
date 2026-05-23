@@ -1,6 +1,5 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
 
 const FONT_FAMILY_NAME = "AiExportNotoSansSC";
 
@@ -10,21 +9,22 @@ const FONT_CANDIDATES = [
   join(process.cwd(), "src", "assets", "fonts", "NotoSansSC-Regular.ttf"),
 ].filter((value): value is string => typeof value === "string" && value.length > 0);
 
-let cachedFontFileUrl: string | null | undefined;
+let cachedFontDataUri: string | null | undefined;
 
-function resolveFontFileUrl() {
-  if (cachedFontFileUrl !== undefined) {
-    return cachedFontFileUrl;
+function resolveFontDataUri() {
+  if (cachedFontDataUri !== undefined) {
+    return cachedFontDataUri;
   }
 
   for (const candidate of FONT_CANDIDATES) {
     if (existsSync(candidate)) {
-      cachedFontFileUrl = pathToFileURL(candidate).href;
-      return cachedFontFileUrl;
+      const buffer = readFileSync(candidate);
+      cachedFontDataUri = `data:font/ttf;base64,${buffer.toString("base64")}`;
+      return cachedFontDataUri;
     }
   }
 
-  cachedFontFileUrl = null;
+  cachedFontDataUri = null;
   return null;
 }
 
@@ -37,22 +37,24 @@ export function getAiExportCodeFontFamily() {
 }
 
 export function buildAiExportFontFaceCss() {
-  const fontFileUrl = resolveFontFileUrl();
+  const fontDataUri = resolveFontDataUri();
 
-  if (!fontFileUrl) {
+  if (!fontDataUri) {
     return "";
   }
 
   return `@font-face {
     font-family: "${FONT_FAMILY_NAME}";
-    src: url("${fontFileUrl}") format("truetype");
+    src: url("${fontDataUri}") format("truetype");
     font-style: normal;
     font-weight: 400;
+    font-display: block;
   }
   @font-face {
     font-family: "${FONT_FAMILY_NAME}";
-    src: url("${fontFileUrl}") format("truetype");
+    src: url("${fontDataUri}") format("truetype");
     font-style: normal;
     font-weight: 700;
+    font-display: block;
   }`;
 }
