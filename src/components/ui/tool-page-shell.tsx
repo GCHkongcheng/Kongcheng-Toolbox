@@ -26,16 +26,16 @@ export function ToolPageShell({
   children,
 }: ToolPageShellProps) {
   return (
-    <main className="min-h-screen bg-background px-4 py-4 text-foreground lg:px-8 lg:py-8 xl:px-10">
+    <main className="min-h-screen overflow-x-hidden bg-background px-3 py-3 text-foreground sm:px-4 sm:py-4 lg:px-8 lg:py-8 xl:px-10">
       <div className={cn("mx-auto w-full", maxWidthClassName)}>
         <ToolsTopNav backHref={backHref} backLabel={backLabel} />
 
-        <header className="mb-6 flex flex-col gap-4 border-b border-border/70 pb-6 md:flex-row md:items-start md:justify-between">
+        <header className="mb-4 flex flex-col gap-4 border-b border-border/70 pb-4 sm:mb-6 sm:pb-6 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
               Kongcheng Toolbox
             </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight lg:text-3xl">
+            <h1 className="mt-2 text-[1.7rem] font-bold leading-tight tracking-tight sm:text-2xl lg:text-3xl">
               {title}
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -43,7 +43,7 @@ export function ToolPageShell({
             </p>
           </div>
           {status || headerActions ? (
-            <div className="flex w-full flex-col items-start gap-3 md:w-auto md:items-end">
+            <div className="flex w-full max-w-full flex-col items-start gap-3 md:w-auto md:items-end">
               {status ? <StatusBadge status={status} /> : null}
               {headerActions}
             </div>

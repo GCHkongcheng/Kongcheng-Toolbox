@@ -403,12 +403,12 @@ export default function AiRichExportPage() {
   };
 
   const exportPanel = (
-    <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:flex-nowrap md:justify-end">
+    <div className="ai-export-header-actions flex max-w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-start md:flex-nowrap md:justify-end">
       <button
         type="button"
         onClick={handleCopyAsLongImage}
         disabled={isCopyingImage || content.trim().length === 0}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-border bg-background px-5 text-sm font-bold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-3 text-sm font-bold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-5"
       >
         {isCopyingImage ? (
           <LoaderCircle size={16} className="animate-spin" />
@@ -426,7 +426,7 @@ export default function AiRichExportPage() {
         value={selectedFormat}
         title={selectedOption.hint}
         onChange={(event) => setSelectedFormat(event.target.value as ExportOption)}
-        className="h-10 min-w-36 rounded-full border border-border bg-background px-4 pr-9 text-sm font-bold text-foreground outline-none transition hover:border-foreground/30 focus:border-foreground/50 focus:ring-4 focus:ring-foreground/10"
+        className="h-10 w-full min-w-0 rounded-full border border-border bg-background px-4 pr-9 text-sm font-bold text-foreground outline-none transition hover:border-foreground/30 focus:border-foreground/50 focus:ring-4 focus:ring-foreground/10 sm:w-auto sm:min-w-36"
       >
         {exportOptions.map((option) => (
           <option key={option.id} value={option.id}>
@@ -439,7 +439,7 @@ export default function AiRichExportPage() {
         type="button"
         onClick={handleExport}
         disabled={isExporting || content.trim().length === 0}
-        className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-3 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-950/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-5"
       >
         {isExporting ? (
           <LoaderCircle size={16} className="animate-spin" />
@@ -460,7 +460,7 @@ export default function AiRichExportPage() {
       maxWidthClassName="max-w-none"
     >
       {message || error ? (
-        <div className="fixed right-4 top-20 z-50 max-w-[calc(100vw-2rem)] md:right-8">
+        <div className="fixed left-3 right-3 top-16 z-50 md:left-auto md:right-8 md:top-20 md:max-w-[calc(100vw-2rem)]">
           <div
             role={error ? "alert" : "status"}
             aria-live={error ? "assertive" : "polite"}
@@ -490,10 +490,10 @@ export default function AiRichExportPage() {
         </div>
       ) : null}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,0.96fr)_minmax(560px,1.04fr)] 2xl:grid-cols-[minmax(720px,0.95fr)_minmax(720px,1.05fr)]">
-        <section className="space-y-5">
-          <div className="overflow-hidden rounded-[30px] border border-border bg-card shadow-sm">
-            <div className="border-b border-border/70 bg-muted/30 px-5 py-4 lg:px-6">
+      <div className="grid min-w-0 items-start gap-4 sm:gap-5 xl:grid-cols-[minmax(0,0.96fr)_minmax(560px,1.04fr)] 2xl:grid-cols-[minmax(720px,0.95fr)_minmax(720px,1.05fr)]">
+        <section className="min-w-0 space-y-5">
+          <div className="overflow-hidden rounded-[24px] border border-border bg-card shadow-sm sm:rounded-[30px]">
+            <div className="border-b border-border/70 bg-muted/30 px-4 py-4 sm:px-5 lg:px-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-base font-bold text-foreground">内容输入</p>
@@ -501,18 +501,18 @@ export default function AiRichExportPage() {
                     支持 Markdown，也可以直接粘贴普通文本。
                   </p>
                 </div>
-                <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-border bg-background text-center text-xs">
-                  <div className="px-3 py-2">
+                <div className="grid w-full grid-cols-3 overflow-hidden rounded-2xl border border-border bg-background text-center text-xs sm:w-auto">
+                  <div className="px-2 py-2 sm:px-3">
                     <p className="font-bold text-foreground">
                       {stats.characters.toLocaleString()}
                     </p>
                     <p className="text-muted-foreground">字符</p>
                   </div>
-                  <div className="border-x border-border px-3 py-2">
+                  <div className="border-x border-border px-2 py-2 sm:px-3">
                     <p className="font-bold text-foreground">{stats.lines}</p>
                     <p className="text-muted-foreground">行</p>
                   </div>
-                  <div className="px-3 py-2">
+                  <div className="px-2 py-2 sm:px-3">
                     <p className="font-bold text-foreground">
                       {stats.words.toLocaleString()}
                     </p>
@@ -521,12 +521,12 @@ export default function AiRichExportPage() {
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 grid min-w-0 grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 <button
                   type="button"
                   onClick={handlePaste}
                   disabled={isPasting}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-w-0 items-center justify-center gap-2 rounded-full border border-border bg-background px-2 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60 sm:px-3"
                 >
                   <ClipboardPaste size={15} />
                   {isPasting ? "正在粘贴..." : "一键粘贴"}
@@ -536,7 +536,7 @@ export default function AiRichExportPage() {
                   type="button"
                   onClick={handleCopy}
                   disabled={isCopying || content.trim().length === 0}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-w-0 items-center justify-center gap-2 rounded-full border border-border bg-background px-2 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60 sm:px-3"
                 >
                   <Copy size={15} />
                   {isCopying ? "正在复制..." : "复制内容"}
@@ -545,7 +545,7 @@ export default function AiRichExportPage() {
                 <button
                   type="button"
                   onClick={handleRestoreSample}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent"
+                  className="inline-flex min-w-0 items-center justify-center gap-2 rounded-full border border-border bg-background px-2 py-2 text-sm font-semibold text-foreground transition hover:border-slate-400 hover:bg-accent sm:px-3"
                 >
                   <RotateCcw size={15} />
                   恢复示例
@@ -555,15 +555,15 @@ export default function AiRichExportPage() {
                   type="button"
                   onClick={handleClear}
                   disabled={content.length === 0}
-                  className="inline-flex items-center gap-2 rounded-full border border-transparent px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-w-0 items-center justify-center gap-2 rounded-full border border-transparent px-2 py-2 text-sm font-semibold text-muted-foreground transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60 sm:px-3"
                 >
-                  <Eraser size={15} />
-                  清空
+                  <Eraser className="shrink-0" size={15} />
+                  <span className="truncate">清空</span>
                 </button>
               </div>
             </div>
 
-            <div className="bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.09),transparent_30%),linear-gradient(180deg,#ffffff,#fffdf8)] p-4 lg:p-5">
+            <div className="bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.09),transparent_30%),linear-gradient(180deg,#ffffff,#fffdf8)] p-3 sm:p-4 lg:p-5">
               <textarea
                 ref={textareaRef}
                 value={content}
@@ -573,11 +573,11 @@ export default function AiRichExportPage() {
                     resetFeedback();
                   }
                 }}
-                className="min-h-[520px] w-full resize-y rounded-[24px] border border-amber-100 bg-white/90 px-4 py-4 font-mono text-sm leading-7 text-slate-800 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 2xl:min-h-[640px]"
+                className="min-h-[360px] w-full max-w-full resize-y rounded-[20px] border border-amber-100 bg-white/90 px-3 py-3 font-mono text-sm leading-7 text-slate-800 shadow-inner outline-none transition placeholder:text-slate-400 focus:border-amber-300 focus:ring-4 focus:ring-amber-100 sm:min-h-[520px] sm:rounded-[24px] sm:px-4 sm:py-4 2xl:min-h-[640px]"
                 placeholder="把 AI 输出内容粘贴到这里..."
               />
 
-              <div className="mt-4 grid gap-3 text-xs leading-5 text-slate-600 md:grid-cols-2">
+              <div className="mt-3 grid gap-2 text-xs leading-5 text-slate-600 md:mt-4 md:grid-cols-2 md:gap-3">
                 <div className="rounded-2xl border border-amber-100 bg-white/80 px-4 py-3">
                   小提示：适合粘贴 ChatGPT、Claude、通义等 AI 回答，也支持 Markdown 草稿。
                 </div>
@@ -589,8 +589,8 @@ export default function AiRichExportPage() {
           </div>
         </section>
 
-        <aside className="xl:sticky xl:top-6">
-          <section className="rounded-[30px] border border-border bg-card p-5 shadow-sm lg:p-6">
+        <aside className="min-w-0 xl:sticky xl:top-6">
+          <section className="rounded-[24px] border border-border bg-card p-4 shadow-sm sm:rounded-[30px] sm:p-5 lg:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-base font-bold text-foreground">导出效果预览</p>
@@ -598,7 +598,7 @@ export default function AiRichExportPage() {
                   {selectedPreviewOption.hint}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
                 <label htmlFor="preview-mode" className="sr-only">
                   预览模式
                 </label>
@@ -608,7 +608,7 @@ export default function AiRichExportPage() {
                   onChange={(event) =>
                     setPreviewMode(event.target.value as PreviewMode)
                   }
-                  className="h-9 rounded-full border border-border bg-background px-3 pr-8 text-xs font-bold text-foreground shadow-sm outline-none transition hover:border-foreground/30 focus:border-foreground/50 focus:ring-4 focus:ring-foreground/10"
+                  className="h-9 min-w-0 flex-1 rounded-full border border-border bg-background px-3 pr-8 text-xs font-bold text-foreground shadow-sm outline-none transition hover:border-foreground/30 focus:border-foreground/50 focus:ring-4 focus:ring-foreground/10 sm:flex-none"
                 >
                   {previewOptions.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -616,14 +616,14 @@ export default function AiRichExportPage() {
                     </option>
                   ))}
                 </select>
-                <div className="rounded-full bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+                <div className="hidden rounded-full bg-background px-3 py-1 text-xs font-semibold text-muted-foreground sm:block">
                   {stats.words.toLocaleString()} 词段
                 </div>
               </div>
             </div>
 
             <div
-              className={`ai-export-preview-stage ai-export-preview-stage--${previewMode} mt-4 overflow-auto rounded-[26px] border border-border p-4 md:p-5`}
+              className={`ai-export-preview-stage ai-export-preview-stage--${previewMode} mt-4 overflow-auto rounded-[22px] border border-border p-2 sm:rounded-[26px] sm:p-4 md:p-5`}
             >
               <div
                 ref={previewRef}
