@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  outputFileTracingIncludes: {
+    "/api/tools/ai-rich-export": [
+      "./public/fonts/NotoSansSC-Regular.ttf",
+      "./src/assets/fonts/NotoSansSC-Regular.ttf",
+    ],
+  },
   images: {
     remotePatterns: [
       {
