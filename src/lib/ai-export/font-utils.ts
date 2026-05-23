@@ -6,6 +6,7 @@ const FONT_FAMILY_NAME = "AiExportNotoSansSC";
 
 const FONT_CANDIDATES = [
   process.env.AI_EXPORT_FONT_PATH,
+  join(process.cwd(), "public", "fonts", "NotoSansSC-Regular.ttf"),
   join(process.cwd(), "src", "assets", "fonts", "NotoSansSC-Regular.ttf"),
 ].filter((value): value is string => typeof value === "string" && value.length > 0);
 
@@ -47,5 +48,11 @@ export function buildAiExportFontFaceCss() {
     src: url("${fontFileUrl}") format("truetype");
     font-style: normal;
     font-weight: 400;
+  }
+  @font-face {
+    font-family: "${FONT_FAMILY_NAME}";
+    src: url("${fontFileUrl}") format("truetype");
+    font-style: normal;
+    font-weight: 700;
   }`;
 }
