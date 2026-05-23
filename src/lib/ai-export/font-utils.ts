@@ -65,17 +65,26 @@ export function ensureAiExportFontRuntime() {
 
   const fontPath = resolveFontPath();
 
-  if (!fontPath || process.env.FONTCONFIG_FILE) {
+  if (!fontPath) {
     return;
   }
 
   const fontCacheDir = join(tmpdir(), "ai-export-fontconfig-cache");
   const fontConfigPath = join(tmpdir(), "ai-export-fonts.conf");
+  const previousFontConfigPath = process.env.FONTCONFIG_FILE;
   mkdirSync(fontCacheDir, { recursive: true });
+
+  const previousFontConfigInclude =
+    previousFontConfigPath && previousFontConfigPath !== fontConfigPath
+      ? `  <include ignore_missing="yes">${escapeXmlAttribute(previousFontConfigPath)}</include>\n`
+      : "";
 
   const fontsConf = `<?xml version="1.0"?>
 <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
 <fontconfig>
+${previousFontConfigInclude}  <rescan>
+    <int>0</int>
+  </rescan>
   <dir>${escapeXmlAttribute(dirname(fontPath))}</dir>
   <cachedir>${escapeXmlAttribute(fontCacheDir)}</cachedir>
   <alias>
@@ -84,18 +93,31 @@ export function ensureAiExportFontRuntime() {
       <family>${FONT_FAMILY_REAL_NAME}</family>
     </prefer>
   </alias>
+  <match target="pattern">
+    <test qual="any" name="family" compare="eq">
+      <string>${FONT_FAMILY_NAME}</string>
+    </test>
+    <edit name="family" mode="prepend" binding="strong">
+      <string>${FONT_FAMILY_REAL_NAME}</string>
+    </edit>
+  </match>
 </fontconfig>`;
 
   writeFileSync(fontConfigPath, fontsConf);
   process.env.FONTCONFIG_FILE = fontConfigPath;
+  process.env.PANGOCAIRO_BACKEND ??= "fontconfig";
 }
 
 export function getAiExportSansFontFamily() {
-  return `'${FONT_FAMILY_REAL_NAME}', '${FONT_FAMILY_NAME}', 'Microsoft YaHei UI', 'PingFang SC', sans-serif`;
+  return `${FONT_FAMILY_NAME}, '${FONT_FAMILY_REAL_NAME}', 'Microsoft YaHei UI', 'PingFang SC', sans-serif`;
 }
 
 export function getAiExportCodeFontFamily() {
-  return `'${FONT_FAMILY_NAME}', 'Consolas', 'SFMono-Regular', monospace`;
+  return `${FONT_FAMILY_NAME}, 'Consolas', 'SFMono-Regular', monospace`;
+}
+
+export function getAiExportDocumentFontFamily() {
+  return FONT_FAMILY_REAL_NAME;
 }
 
 export function buildAiExportFontFaceCss() {

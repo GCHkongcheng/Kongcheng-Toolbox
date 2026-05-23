@@ -15,7 +15,6 @@ import type {
   TableCell,
   Text,
 } from "mdast";
-import sharp from "sharp";
 import { createStoredZip } from "@/lib/ai-export/archive";
 import {
   buildAiExportFontFaceCss,
@@ -698,6 +697,7 @@ async function renderTree(tree: Root) {
 
 async function svgToBuffer(svg: string, format: ImageFormat) {
   ensureAiExportFontRuntime();
+  const { default: sharp } = await import("sharp");
   const image = sharp(Buffer.from(svg));
   return format === "png"
     ? image.png().toBuffer()

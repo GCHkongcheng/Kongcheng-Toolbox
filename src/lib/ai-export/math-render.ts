@@ -1,11 +1,11 @@
 import { Buffer } from "node:buffer";
-import sharp from "sharp";
 import { mathjax } from "mathjax-full/js/mathjax.js";
 import { TeX } from "mathjax-full/js/input/tex.js";
 import { AllPackages } from "mathjax-full/js/input/tex/AllPackages.js";
 import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
 import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
 import { SVG } from "mathjax-full/js/output/svg.js";
+import { ensureAiExportFontRuntime } from "@/lib/ai-export/font-utils";
 
 export interface FormulaAsset {
   dataUri: string;
@@ -61,6 +61,8 @@ export async function renderFormulaAsset(
       display: displayMode,
     });
     const mathSvg = extractSvgFragment(adaptor.outerHTML(node));
+    ensureAiExportFontRuntime();
+    const { default: sharp } = await import("sharp");
     const { data, info } = await sharp(Buffer.from(mathSvg), {
       density: displayMode ? 216 : 120,
     })

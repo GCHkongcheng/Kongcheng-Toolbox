@@ -36,6 +36,7 @@ import {
   type IRunOptions,
 } from "docx";
 import { createDocxMathFromLatex } from "@/lib/ai-export/docx-math";
+import { getAiExportDocumentFontFamily } from "@/lib/ai-export/font-utils";
 import { getSuggestedFileBase, parseMarkdown } from "@/lib/ai-export/markdown";
 
 interface InlineMathNode {
@@ -63,8 +64,8 @@ const PAGE_MARGIN = {
   left: 900,
 };
 
-const BODY_FONT = "Microsoft YaHei";
-const CODE_FONT = "Consolas";
+const BODY_FONT = getAiExportDocumentFontFamily();
+const CODE_FONT = BODY_FONT;
 const BODY_COLOR = "1F2937";
 const BORDER_COLOR = "D6D3D1";
 const CODE_BG = "F8FAFC";

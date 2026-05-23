@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 import { PDFDocument } from "pdf-lib";
 import { createDocxFromMarkdown } from "@/lib/ai-export/docx";
+import { ensureAiExportFontRuntime } from "@/lib/ai-export/font-utils";
 import {
   EXPORT_PAGE_HEIGHT,
   EXPORT_PAGE_WIDTH,
@@ -63,6 +64,8 @@ async function createPdfViaLibreOffice(markdown: string) {
   if (!sofficePath) {
     return null;
   }
+
+  ensureAiExportFontRuntime();
 
   const docxFile = await createDocxFromMarkdown(markdown);
   const tempDir = await mkdtemp(join(tmpdir(), "ai-export-pdf-"));
